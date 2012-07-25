@@ -62,7 +62,9 @@ namespace NemoKachi
             if (rootFrame.Content == null)
             {
                 // When the navigation stack isn't restored, navigate to the first page.
-                if (!rootFrame.Navigate(typeof(MainPage)))
+
+                //if there is no stored account infomation
+                if (!rootFrame.Navigate(typeof(FirstRunPage)))
                 {
                     throw new Exception("Failed to create initial page");
                 }
