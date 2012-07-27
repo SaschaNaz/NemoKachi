@@ -37,7 +37,7 @@
             <Button x:Name="backButton" Click="GoBack" IsEnabled="{Binding Frame.CanGoBack, ElementName=pageRoot}" Style="{StaticResource BackButtonStyle}"/>
             <TextBlock x:Name="pageTitle" Grid.Column="1" Text="{StaticResource AppName}" Style="{StaticResource PageHeaderTextStyle}"/>
         </Grid>
-        <local:LoginVisualizer x:Name="lvisual" Grid.Row="1" />
+        <local:LoginVisualizer x:Name="lvisual" Grid.RowSpan="2" />
 
         <VisualStateManager.VisualStateGroups>
 

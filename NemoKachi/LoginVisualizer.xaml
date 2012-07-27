@@ -6,25 +6,44 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <!--<Border x:Name="LayoutRoot" BorderBrush="#846D6D6D" BorderThickness="50">-->
-        <Grid x:Name="LayoutCenter" Background="#FF00A6A6" >
-            <Grid x:Name="ContextGrid" Grid.RowSpan="2" Margin="50,50,50,0" >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <ProgressBar x:Name="progressBar1" HorizontalAlignment="Stretch" Height="30" VerticalAlignment="Top" />
-                <TextBlock x:Name="ErrorText" Style="{StaticResource SubheaderTextStyle}" Grid.Row="1"/>
-                <Grid x:Name="webviewGrid" Visibility="Collapsed" Grid.Row="1">
+    
+    <Grid x:Name="LayoutRoot" Grid.RowSpan="2" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ProgressRing HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="100" Height="100" Margin="50" IsActive="True"  />
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" />
+            <!--<StackPanel x:Name="messageStack"  HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" >
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="18" />
+                        <Setter Property="HorizontalAlignment" Value="Center" />
+                        <Setter Property="Foreground" Value="Gray" />
+                    </Style>
+                </StackPanel.Resources>
+            </StackPanel>-->
+        </Grid>
+        
+        <Grid x:Name="webviewGrid" Visibility="Collapsed" Grid.RowSpan="2" Background="#4C808080" >
+            <Grid MaxWidth="1024" Margin="200,0,200,0" Background="White" >
+                <Grid MaxHeight="920">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="35" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <WebView x:Name="webView1" />
-                    <Button Grid.Row="1" Content="Reload" Margin="7" HorizontalAlignment="Right"/>
-                </Grid>
+                    <TextBlock Text="Twitter Authentication" Style="{StaticResource HeaderTextStyle}" Foreground="Black" Margin="50,0,0,0" />
+                    <TextBlock Grid.Row="1" Text="Please input your Twitter ID and password to authenticate this app for your account." Foreground="Black" FontSize="16" VerticalAlignment="Bottom"  TextWrapping="Wrap" Margin="50,0,0,0" />
+                    <Button Grid.Row="2" Style="{StaticResource RefreshAppBarButtonStyle}" VerticalAlignment="Top" />
+                    <WebView Grid.Row="2" x:Name="webView1" Margin="80,40,80,40" />
+                </Grid>  
             </Grid>
         </Grid>
-    <!--</Border>-->
+    </Grid>
 </UserControl>

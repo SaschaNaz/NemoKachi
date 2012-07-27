@@ -19,15 +19,12 @@ namespace NemoKachi
 {
     public partial class LoginVisualizer : UserControl, TwitterClient.ILoginVisualizer
     {
-        public Double CurrentProcess
+        public Int32 Progress { get; set; }
+        public TwitterClient.LoginPhase Phase { get; set; }
+        public String CurrentMessage
         {
-            get { return progressBar1.Value; }
-            set { progressBar1.Value = value; }
-        }
-        public String ErrorMessage
-        {
-            get { return ErrorText.Text; }
-            set { ErrorText.Text = value; progressBar1.ShowError = true; }
+            get { return messageBlock.Text; }
+            set { messageBlock.Text = value; }
         }
 
         public event RoutedEventHandler Closed;
