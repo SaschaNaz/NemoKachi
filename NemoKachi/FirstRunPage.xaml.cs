@@ -45,8 +45,9 @@ namespace NemoKachi
                     //ClientView.SelectedItem = client;
                     //LayoutRoot.Children.Remove(visualizer);
 
-                    if (!le.Denied)
+                    if (le.Message == TwitterClient.LoginHandler.LoginMessage.Succeed)
                     {
+                        await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
                         //TweetPager pager = new TweetPager() { Title = client.AccountName };
                         //pager.Columns.Add(new TweetColumnist() { Title = "Friends" });
                         //pager.Columns.Add(new TweetColumnist() { Title = "Mentions" });
@@ -57,7 +58,7 @@ namespace NemoKachi
                         //this.BottomAppBar.IsOpen = true;
                         //로그인 된 계정용의 새 페이지를 추가해서, 이벤트 뜨면 새 페이지로 바로 Navigate 하도록 함
                     }
-                    else
+                    else if (le.Message == TwitterClient.LoginHandler.LoginMessage.UserDenied)
                     {
                         await new Windows.UI.Popups.MessageDialog("Login process is cancelled by you.").ShowAsync();
                     }
