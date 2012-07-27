@@ -70,7 +70,7 @@ namespace NemoKachi
 
             try
             {
-                TwitterClient.LoginHandler.LoginCompletedEventArgs loginArgs = await lhandler.AccountLoginAsync();
+                TwitterClient.AccountInfo loginArgs = await lhandler.AccountLoginAsync();
                 await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
                 //if (loginTask.IsCompleted)
                 //{

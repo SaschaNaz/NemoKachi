@@ -17,7 +17,6 @@
             </ResourceDictionary.MergedDictionaries>
             <x:String x:Key="oauth_consumer_key">HeOeHqoUvfzrcRNUM90iPw</x:String>
             <x:String x:Key="oauth_consumer_secret">nNNdPQEhAbu986vIKnqRfjScwfZzvhVovSUT5iWhavA</x:String>
-            <local:LoginphaseStringConverter x:Key="loginphaseStringConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
