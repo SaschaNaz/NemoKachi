@@ -18,7 +18,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TextBlock x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" />
+            <TextBlock x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
             <!--<StackPanel x:Name="messageStack"  HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" >
                 <StackPanel.Resources>
                     <Style TargetType="TextBlock">
