@@ -59,12 +59,17 @@ namespace NemoKachi
 
     public partial class LoginVisualizer : UserControl, TwitterClient.ILoginVisualizer
     {
-        public TwitterClient.LoginPhase Phase { get; set; }
-        //public String CurrentMessage
-        //{
-        //    get { return messageBlock.Text; }
-        //    set { messageBlock.Text = value; }
-        //}
+        public static readonly DependencyProperty PhaseProperty =
+            DependencyProperty.Register(
+            "Phase",
+            typeof(TwitterClient.LoginPhase),
+            typeof(LoginVisualizer), new PropertyMetadata(TwitterClient.LoginPhase.RecievingOAuthCallback));
+
+        public TwitterClient.LoginPhase Phase
+        {
+            get { return (TwitterClient.LoginPhase)GetValue(PhaseProperty); }
+            set { SetValue(PhaseProperty, (TwitterClient.LoginPhase)value); }
+        }
 
         public event RoutedEventHandler Closed;
         protected virtual void OnClosed(RoutedEventArgs e)
