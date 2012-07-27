@@ -137,6 +137,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="NemoKachi_TemporaryKey.pfx" />
+    <PRIResource Include="String\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Logo.png" />

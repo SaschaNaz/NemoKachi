@@ -17,15 +17,54 @@ using NemoKachi.TwitterWrapper;
 
 namespace NemoKachi
 {
+    public class LoginphaseStringConverter : Windows.UI.Xaml.Data.IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string culture)
+        {
+            if (value == null)
+                throw new ArgumentNullException("value", "Value cannot be null.");
+
+            if (!typeof(TwitterClient.LoginPhase).Equals(value.GetType()))
+                throw new ArgumentException("Value must be of type (TwitterClient.LoginPhase).", "value");
+
+            TwitterClient.LoginPhase phase = (TwitterClient.LoginPhase)value;
+            var loader = new Windows.ApplicationModel.Resources.ResourceLoader();
+
+            switch (phase)
+            {
+                case TwitterClient.LoginPhase.RecievingOAuthCallback:
+                    return loader.GetString("RecievingOAuthCallback");
+                case TwitterClient.LoginPhase.AuthorizingApp:
+                    return loader.GetString("AuthorizingApp");
+                case TwitterClient.LoginPhase.VerifyingTempToken:
+                    return loader.GetString("VerifyingTempToken");
+                case TwitterClient.LoginPhase.AccessingToken:
+                    return loader.GetString("AccessingToken");
+                case TwitterClient.LoginPhase.LoadingAccountInformation:
+                    return loader.GetString("LoadingAccountInformation");
+                case TwitterClient.LoginPhase.AccessingAccountImageURI:
+                    return loader.GetString("AccessingAccountImageURI");
+                case TwitterClient.LoginPhase.LoadingAccountImage:
+                    return loader.GetString("LoadingAccountImage");
+                default:
+                    return loader.GetString("(Error)");
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public partial class LoginVisualizer : UserControl, TwitterClient.ILoginVisualizer
     {
-        public Int32 Progress { get; set; }
         public TwitterClient.LoginPhase Phase { get; set; }
-        public String CurrentMessage
-        {
-            get { return messageBlock.Text; }
-            set { messageBlock.Text = value; }
-        }
+        //public String CurrentMessage
+        //{
+        //    get { return messageBlock.Text; }
+        //    set { messageBlock.Text = value; }
+        //}
 
         public event RoutedEventHandler Closed;
         protected virtual void OnClosed(RoutedEventArgs e)
@@ -39,6 +78,7 @@ namespace NemoKachi
         public LoginVisualizer()
         {
             this.InitializeComponent();
+            DataContext = this;
         }
 
         public WebView SetWebView(Uri AuthUri)
