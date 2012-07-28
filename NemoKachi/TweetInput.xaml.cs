@@ -18,6 +18,8 @@ namespace NemoKachi
 {
     public sealed partial class TweetInput : UserControl
     {
+        public CollectionViewSource cvs { get; set; }//아나 역시 커스텀 컬렉션 만들어야되나!
+
         public TweetInput()
         {
             this.InitializeComponent();
@@ -25,7 +27,13 @@ namespace NemoKachi
 
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
-
+            String sendText;
+            SendTextBox.Document.GetText(Windows.UI.Text.TextGetOptions.None, out sendText);
+            await ((cvs as CollectionViewSource).Source as List<TwitterWrapper.TwitterClient>)[0].SendTweet(
+                new TwitterWrapper.TwitterClient.SendTweetQuery()
+                {
+                   status = sendText
+                });
         }
     }
 }

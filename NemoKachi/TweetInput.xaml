@@ -28,7 +28,7 @@
                 <Button Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Content="&#xE141;" Style="{StaticResource IconButtonStyle}" FontSize="40" />
                 <Button Grid.Row="1" Width="60" Height="69" VerticalAlignment="Top" Margin="0,60,0,0" Style="{StaticResource ImageButtonStyle}" />
                 <!--Second Column-->
-                <RichEditBox Grid.Column="1" />
+                <RichEditBox x:Name="SendTextBox" Grid.Column="1" />
                 <!--Third Column-->
                 <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Content="&#xE11C;" Style="{StaticResource IconButtonStyle}" FontSize="40" Click="Button_Click_1" />
             </Grid>

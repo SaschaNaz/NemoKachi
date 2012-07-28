@@ -59,7 +59,7 @@
                 </TextBlock.Style>
             </TextBlock>
             <GridView HorizontalAlignment="Left" Width="853" Height="116" ItemsSource="{Binding Source={StaticResource accountsCollection}}"/>
-            <local:TweetInput Width="600" Height="300" />
+            <local:TweetInput Width="600" Height="300" cvs="{StaticResource accountsCollection}" />
         </StackPanel>
         
         <VisualStateManager.VisualStateGroups>
