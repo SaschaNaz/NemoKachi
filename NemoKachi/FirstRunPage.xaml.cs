@@ -26,10 +26,10 @@ namespace NemoKachi
         public FirstRunPage()
         {
             this.InitializeComponent();
-            Login().AsAsyncAction().GetResults();
+            Login();
         }
 
-        async Task Login()
+        async void Login()
         {
             String ErrorMessage = null;
 
@@ -72,6 +72,8 @@ namespace NemoKachi
             {
                 TwitterClient.AccountInfo loginArgs = await lhandler.AccountLoginAsync();
                 await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
+                ((Application.Current.Resources["accountsCollection"] as CollectionViewSource).Source as List<TwitterClient>).Add(client);
+                Frame.Navigate(typeof(MainPage));
                 //if (loginTask.IsCompleted)
                 //{
                 //        //TweetPager pager = new TweetPager() { Title = client.AccountName };

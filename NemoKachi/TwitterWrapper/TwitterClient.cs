@@ -16,12 +16,11 @@ namespace NemoKachi.TwitterWrapper
 {
     public partial class TwitterClient : DependencyObject
     {
-        static readonly System.Net.Http.Headers.ProductInfoHeaderValue UserAgent = new System.Net.Http.Headers.ProductInfoHeaderValue("NemoKachi", "Alpha-CP");
+        static readonly System.Net.Http.Headers.ProductInfoHeaderValue UserAgent = new System.Net.Http.Headers.ProductInfoHeaderValue("NemoKachi", "Alpha-RP");
 
         public interface ILoginVisualizer
         {
-            Double CurrentProcess { get; set; }
-            String ErrorMessage { get; set; }
+            LoginPhase Phase { get; set; }
             /// <summary>
             /// An ILoginVisualizer has to make a WebView and some other UI things with Authorization URI to let the user go authorization page.
             /// The ILoginVisualizer must immediatly return the WebView after the settings are completed.
@@ -34,15 +33,52 @@ namespace NemoKachi.TwitterWrapper
             /// </summary>
             void RemoveWebView();
         }
+        public enum LoginPhase
+        {
+            /// <summary>
+            /// Phase 1.
+            /// </summary>
+            WaitingOAuthCallback, 
+            /// <summary>
+            /// Phase 2.
+            /// </summary>
+            AuthorizingApp,
+            /// <summary>
+            /// Phase 3.
+            /// </summary>
+            VerifyingTempToken,
+            /// <summary>
+            /// Phase 4.
+            /// </summary>
+            AccessingToken,
+            /// <summary>
+            /// Phase 5
+            /// </summary>
+            LoadingAccountInformation,
+            /// <summary>
+            /// Phase 6
+            /// </summary>
+            GettingAccountImageURI
+        }
+        public class AccountInfo
+        {
+            public String AccountName;
+            public UInt64 AccountId;
+        }
         public class LoginHandler
         {
-            public event LoginCompletedEventHandler LoginCompleted;
-            public delegate void LoginCompletedEventHandler(object sender, LoginCompletedEventArgs e);
+            event LoginCompletedEventHandler LoginCompleted;
+            delegate void LoginCompletedEventHandler(object sender, LoginCompletedEventArgs e);
             public class LoginCompletedEventArgs : EventArgs
             {
-                public Boolean Denied;
-                public Nullable<UInt64> AccountId;
-                public String AccountName;
+                public Boolean Succeed;
+                public Exception InnerException;
+                public AccountInfo AuthedAccountInfo;
+            }
+
+            public enum LoginMessage
+            {
+                Succeed, UserDenied, Failed
             }
             protected virtual void OnLoginCompleted(LoginCompletedEventArgs e)
             {
@@ -61,11 +97,49 @@ namespace NemoKachi.TwitterWrapper
                 Client = client;
                 Vis = vis;
                 CallbackUri = callbackUri;
-            } 
+            }
 
-            public async Task LoginAsync()
+            public Task<AccountInfo> AccountLoginAsync()
             {
-                Vis.CurrentProcess = 0;//Recieving OAuth callback...
+                var taskSource = new TaskCompletionSource<AccountInfo>();
+
+                LoginCompletedEventHandler handler = null;
+                handler = delegate(Object sender, LoginCompletedEventArgs e)
+                {
+                    LoginCompleted -= handler;
+                    if (e.Succeed)
+                        taskSource.SetResult(e.AuthedAccountInfo);
+                    else
+                    {
+                        if (e.InnerException == null)
+                            taskSource.SetCanceled();
+                        else
+                            taskSource.SetException(e.InnerException);
+                    }
+                    //switch (e.Message)
+                    //{
+                    //    case LoginMessage.Succeed:
+                    //        taskSource.SetResult(e);
+                    //        break;
+                    //    case LoginMessage.Failed:
+                    //        taskSource.SetException(new Exception("Failed"));
+                    //        break;
+                    //    case LoginMessage.UserDenied:
+                    //        taskSource.SetCanceled();
+                    //        break;
+                    //}
+                };
+                LoginCompleted += handler;
+
+                LoginAsync();
+
+                return taskSource.Task;
+            }
+
+            public async void LoginAsync()
+            {
+                //"Recieving OAuth callback...";
+                Vis.Phase = LoginPhase.WaitingOAuthCallback;
                 using (HttpResponseMessage response = await Client.OAuthStream(
                     HttpMethod.Post,
                     "https://api.twitter.com/oauth/request_token",
@@ -77,30 +151,16 @@ namespace NemoKachi.TwitterWrapper
 
                         if (loginparams["oauth_callback_confirmed"] == "true")
                         {
-                            Vis.CurrentProcess = 10;//"Please authorize this app on your account...";
-                            //Grid webviewgrid = new Grid() { Margin = new Thickness() { Left = 50, Right = 50, Bottom = 30 } };
-                            //webviewgrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) });
-                            //webviewgrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(0, GridUnitType.Auto) });
-                            //Button button = new Button();
-                            //Grid.SetRow(button, 1);
-                            //webviewgrid.Children.Add(button);
-                            ////TextBlock textblock = new TextBlock() { FontSize = 20, Text = "Click Twitter logo to return to first authorization page." };
-                            ////Grid.SetRow(textblock, 1);
-                            ////webviewgrid.Children.Add(textblock);
-                            //WebView webView1 = new WebView();// { Margin = new Thickness() { Bottom = 50, Left = 50, Right = 50, Top = 50 } };
-
-                            //button.Click += new RoutedEventHandler(delegate
-                            //{
-                            //    webView1.Navigate(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
-                            //    //webView1.Navigate(new Uri("http://api.twitter.com//"));
-                            //});
+                            //"Authorizing this app on your account...";
+                            Vis.Phase = LoginPhase.AuthorizingApp;
                             WebView webView1 = Vis.SetWebView(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
                             webView1.LoadCompleted += new Windows.UI.Xaml.Navigation.LoadCompletedEventHandler(
                                 async delegate(Object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
                                 {
                                     if (String.Format("{0}://{1}{2}", e.Uri.Scheme, e.Uri.Host, e.Uri.AbsolutePath) == CallbackUri)
                                     {
-                                        Vis.CurrentProcess = 20;//Verifying your temporary twitter token...
+                                        //"Verifying your temporary twitter token...";
+                                        Vis.Phase = LoginPhase.VerifyingTempToken;
                                         //ChildGrid.Children.Remove(webviewgrid);
                                         Vis.RemoveWebView();
                                         String webparam = e.Uri.Query;
@@ -109,110 +169,75 @@ namespace NemoKachi.TwitterWrapper
                                             if (!dict.ContainsKey("denied"))
                                             {
                                                 await webView1_LoadCompleted(TwitterClient.HTTPQuery(webparam.Substring(1)));
-                                                OnLoginCompleted(new LoginCompletedEventArgs() { AccountId = Client.AccountId, AccountName = Client.AccountName  });//EventArgs에 AccountId, AccountName 넣기
+                                                OnLoginCompleted(
+                                                    new LoginCompletedEventArgs() 
+                                                    { 
+                                                        AuthedAccountInfo = new AccountInfo() { AccountId = Client.AccountId.Value, AccountName = Client.AccountName},
+                                                        Succeed = true });
                                             }
                                             else
                                             {
-                                                OnLoginCompleted(new LoginCompletedEventArgs() { Denied = true });//전용 EventArgs 만들어 Boolean Denied = true; 하기
+                                                OnLoginCompleted(new LoginCompletedEventArgs() { Succeed = false });
                                             }
                                         }
                                     }
-                                    //else if (e.Uri.Host != "api.twitter.com")
-                                    //{
-                                    //    webView1.Navigate(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
-                                    //}
                                 });
                             webView1.Navigate(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
-                            //oauth_token = loginparams[0, 1];
                             Client.oauth_token_secret = loginparams["oauth_token_secret"];
-                            //Grid.SetRowSpan(webView1, 2);
-                            //webviewgrid.Children.Add(webView1);
-                            //ChildGrid.Children.Add(webviewgrid);
                         }
                         else
                         {
-                            //Vis.CurrentProcess = "Authorization error occured";
-                            Vis.ErrorMessage = "Login Failed, oauth_callback confirming failed.";
+                            //Vis.CurrentMessage = "Login Failed, oauth_callback confirming failed.";
                         }
                     }
                     else
                     {
-                        Vis.ErrorMessage = await ConvertStreamAsync(response.Content);
-                        //throw new Exception("Login Failed");
-                        //Vis.CurrentProcess = "Login error occured: "
-                        //+ Environment.NewLine + JsonObject.Parse(await ConvertStreamAsync(response.Content)).GetNamedObject("errors").GetNamedString("message");
+                        //Vis.CurrentMessage = await ConvertStreamAsync(response.Content);
                     }
                 }
             }
 
-            //public Boolean IsValidUri(Uri currentUri, Uri callbackUri)
-            //{
-            //    if (String.Format("{0}://{1}{2}", currentUri.Scheme, currentUri.Host, currentUri.AbsolutePath) == callbackUri.AbsoluteUri)
-            //    {
-            //        return true;
-            //    }
-            //    else
-            //    {
-            //        return false;
-            //    }
-            //}
-
             public async Task webView1_LoadCompleted(Dictionary<String, String> webparams)
             {
-                Vis.CurrentProcess = 40;//Accessing your twitter token...
+                //"Accessing your twitter token...";
+                Vis.Phase = LoginPhase.AccessingToken;
                 try
                 {
                     Client.oauth_token = webparams["oauth_token"];
                     using (HttpResponseMessage response = await Client.OAuthStream(HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
                         NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterClient.NormalQuery.QueryType.Post)), null))
                     {
-                        //    HttpResponseMessage response = await TwitterClient.OAuth(
-                        //        new SortedDictionary<String, String>(),
-                        //    new SortedDictionary<String, String>()
-                        //{
-                        //    {"oauth_verifier", webparams[1, 1] }
-                        //},
-                        //    HttpMethod.Post,
-                        //    "https://api.twitter.com/oauth/access_token", new SortedDictionary<String, String>());
 
                         if (response.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            Vis.CurrentProcess = 60;//Loading your account information...
+                            //"Loading your account information...";
+                            Vis.Phase = LoginPhase.LoadingAccountInformation;
                             Dictionary<String, String> loginparams = TwitterClient.HTTPQuery((await ConvertStreamAsync(response.Content)));
-                            //String[,] loginparams = new String[4, 2];
-                            //{
-                            //    String[] loginparams1 = response.Content.ReadAsString().Split('&');
-                            //    for (Int32 i = 0; i < 4; i++)
-                            //    {
-                            //        String[] loginparams2 = loginparams1[i].Split('=');
-                            //        loginparams[i, 0] = loginparams2[0];
-                            //        loginparams[i, 1] = loginparams2[1];
-                            //    }
-                            //}
 
                             Client.oauth_token = loginparams["oauth_token"];
                             Client.oauth_token_secret = loginparams["oauth_token_secret"];
                             Client.AccountId = Convert.ToUInt64(loginparams["user_id"]);
                             Client.AccountName = loginparams["screen_name"];
 
-                            Vis.CurrentProcess = 80;//80Accessing your account image...
-                            using (HttpResponseMessage userresponse = await TwitterClient.GetUserProfileImage(Client.AccountName))//Client.GetUserInformation(Client.AccountUserId.Value))
+                            //"Accessing your account image...";
+                            Vis.Phase = LoginPhase.GettingAccountImageURI;
+                            using (HttpResponseMessage userresponse = await TwitterClient.GetUserProfileImage(Client.AccountName))
                             {
                                 if (userresponse.StatusCode == System.Net.HttpStatusCode.Redirect)
                                 {
-                                    Vis.CurrentProcess = 90;//Loading your account image...
+                                    //"Loading your account image...";
                                     Client.AccountImageUri = userresponse.Headers.Location;
-                                    Vis.CurrentProcess = 100;
+                                    //Vis.Progress = 5;
                                 }
                                 else
                                 {
-                                    Vis.ErrorMessage = userresponse.ReasonPhrase;
+                                    //Vis.CurrentMessage = userresponse.ReasonPhrase;
                                 }
                             }
                         }
                         else
                         {
-                            Vis.ErrorMessage = response.ReasonPhrase;
+                            //Vis.CurrentMessage = response.ReasonPhrase;
                         }
                     };
                 }
