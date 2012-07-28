@@ -32,8 +32,8 @@ namespace NemoKachi
 
             switch (phase)
             {
-                case TwitterClient.LoginPhase.RecievingOAuthCallback:
-                    return loader.GetString("RecievingOAuthCallback");
+                case TwitterClient.LoginPhase.WaitingOAuthCallback:
+                    return loader.GetString("WaitingOAuthCallback");
                 case TwitterClient.LoginPhase.AuthorizingApp:
                     return loader.GetString("AuthorizingApp");
                 case TwitterClient.LoginPhase.VerifyingTempToken:
@@ -42,10 +42,8 @@ namespace NemoKachi
                     return loader.GetString("AccessingToken");
                 case TwitterClient.LoginPhase.LoadingAccountInformation:
                     return loader.GetString("LoadingAccountInformation");
-                case TwitterClient.LoginPhase.AccessingAccountImageURI:
-                    return loader.GetString("AccessingAccountImageURI");
-                case TwitterClient.LoginPhase.LoadingAccountImage:
-                    return loader.GetString("LoadingAccountImage");
+                case TwitterClient.LoginPhase.GettingAccountImageURI:
+                    return loader.GetString("GettingAccountImageURI");
                 default:
                     return loader.GetString("(Error)");
             }
@@ -63,7 +61,7 @@ namespace NemoKachi
             DependencyProperty.Register(
             "Phase",
             typeof(TwitterClient.LoginPhase),
-            typeof(LoginVisualizer), new PropertyMetadata(TwitterClient.LoginPhase.RecievingOAuthCallback));
+            typeof(LoginVisualizer), new PropertyMetadata(TwitterClient.LoginPhase.WaitingOAuthCallback));
 
         public TwitterClient.LoginPhase Phase
         {

@@ -16,8 +16,8 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ProgressRing HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="100" Height="100" Margin="50" IsActive="True"  />
-        <Grid Grid.Row="1">
+        <ProgressRing HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="100" Height="100"  IsActive="True"  />
+        <Grid Grid.Row="1" Margin="0,50,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />

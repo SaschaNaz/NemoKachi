@@ -43,11 +43,14 @@ namespace NemoKachi
         {
             // Do not repeat app initialization when already running, just ensure that
             // the window is active
+
             if (args.PreviousExecutionState == ApplicationExecutionState.Running)
             {
                 Window.Current.Activate();
                 return;
             }
+
+            (Application.Current.Resources["accountsCollection"] as CollectionViewSource).Source = new List<TwitterWrapper.TwitterClient>();
 
             // Create a Frame to act navigation context and navigate to the first page
             var rootFrame = new Frame();
