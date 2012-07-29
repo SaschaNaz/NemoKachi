@@ -131,6 +131,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TwitterWrapper\TwitterClient.cs" />
+    <Compile Include="TwitterWrapper\TwitterClient_Login.cs" />
     <Compile Include="TwitterWrapper\TwitterClient_Queries.cs" />
     <Compile Include="TwitterWrapper\TwitterClient_Stream.cs" />
     <Compile Include="TwitterWrapper\TwitterDatas\TwitterDatas.cs" />

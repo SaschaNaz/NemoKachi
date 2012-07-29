@@ -14,607 +14,55 @@ using Windows.Data.Json;
 
 namespace NemoKachi.TwitterWrapper
 {
+    public class AccountToken
+    {
+        public String oauth_token;
+        public String oauth_token_secret;
+        public String AccountName;
+        public UInt64 AccountId;
+        public Uri AccountImageUri;
+
+        static readonly DependencyProperty AccountIdProperty =
+            DependencyProperty.Register("AccountId",
+            typeof(UInt64),
+            typeof(AccountToken),
+            new PropertyMetadata(0ul));
+
+        static readonly DependencyProperty AccountNameProperty =
+            DependencyProperty.Register("AccountName",
+            typeof(String),
+            typeof(AccountToken),
+            new PropertyMetadata(null));
+
+        static readonly DependencyProperty AccountImageUriProperty =
+            DependencyProperty.Register("AccountImageUri",
+            typeof(Uri),
+            typeof(AccountToken),
+            new PropertyMetadata(null));
+    }
+
     public partial class TwitterClient : DependencyObject
     {
-        static readonly System.Net.Http.Headers.ProductInfoHeaderValue UserAgent = new System.Net.Http.Headers.ProductInfoHeaderValue("NemoKachi", "Alpha-RP");
-
-        public interface ILoginVisualizer
-        {
-            LoginPhase Phase { get; set; }
-            /// <summary>
-            /// An ILoginVisualizer has to make a WebView and some other UI things with Authorization URI to let the user go authorization page.
-            /// The ILoginVisualizer must immediatly return the WebView after the settings are completed.
-            /// </summary>
-            /// <param name="AuthUri">An URI that a WebView will initially navigate to.</param>
-            /// <returns></returns>
-            WebView SetWebView(Uri AuthUri);
-            /// <summary>
-            /// Removes WebView from ILoginVisualizer
-            /// </summary>
-            void RemoveWebView();
-        }
-        public enum LoginPhase
-        {
-            /// <summary>
-            /// Phase 1.
-            /// </summary>
-            WaitingOAuthCallback, 
-            /// <summary>
-            /// Phase 2.
-            /// </summary>
-            AuthorizingApp,
-            /// <summary>
-            /// Phase 3.
-            /// </summary>
-            VerifyingTempToken,
-            /// <summary>
-            /// Phase 4.
-            /// </summary>
-            AccessingToken,
-            /// <summary>
-            /// Phase 5
-            /// </summary>
-            LoadingAccountInformation,
-            /// <summary>
-            /// Phase 6
-            /// </summary>
-            GettingAccountImageURI
-        }
-        public class AccountInfo
-        {
-            public String AccountName;
-            public UInt64 AccountId;
-        }
-        public class LoginHandler
-        {
-            event LoginCompletedEventHandler LoginCompleted;
-            delegate void LoginCompletedEventHandler(object sender, LoginCompletedEventArgs e);
-            public class LoginCompletedEventArgs : EventArgs
-            {
-                public Boolean Succeed;
-                public Exception InnerException;
-                public AccountInfo AuthedAccountInfo;
-            }
-
-            public enum LoginMessage
-            {
-                Succeed, UserDenied, Failed
-            }
-            protected virtual void OnLoginCompleted(LoginCompletedEventArgs e)
-            {
-                if (LoginCompleted != null)
-                {
-                    LoginCompleted(this, e);
-                }
-            }
-
-            readonly TwitterClient Client;
-            readonly ILoginVisualizer Vis;
-            readonly String CallbackUri;
-
-            public LoginHandler(TwitterClient client, ILoginVisualizer vis, String callbackUri)
-            {
-                Client = client;
-                Vis = vis;
-                CallbackUri = callbackUri;
-            }
-
-            public Task<AccountInfo> AccountLoginAsync()
-            {
-                var taskSource = new TaskCompletionSource<AccountInfo>();
-
-                LoginCompletedEventHandler handler = null;
-                handler = delegate(Object sender, LoginCompletedEventArgs e)
-                {
-                    LoginCompleted -= handler;
-                    if (e.Succeed)
-                        taskSource.SetResult(e.AuthedAccountInfo);
-                    else
-                    {
-                        if (e.InnerException == null)
-                            taskSource.SetCanceled();
-                        else
-                            taskSource.SetException(e.InnerException);
-                    }
-                    //switch (e.Message)
-                    //{
-                    //    case LoginMessage.Succeed:
-                    //        taskSource.SetResult(e);
-                    //        break;
-                    //    case LoginMessage.Failed:
-                    //        taskSource.SetException(new Exception("Failed"));
-                    //        break;
-                    //    case LoginMessage.UserDenied:
-                    //        taskSource.SetCanceled();
-                    //        break;
-                    //}
-                };
-                LoginCompleted += handler;
-
-                LoginAsync();
-
-                return taskSource.Task;
-            }
-
-            public async void LoginAsync()
-            {
-                //"Recieving OAuth callback...";
-                Vis.Phase = LoginPhase.WaitingOAuthCallback;
-                using (HttpResponseMessage response = await Client.OAuthStream(
-                    HttpMethod.Post,
-                    "https://api.twitter.com/oauth/request_token",
-                    NormalQuery.MakeQuery(), CallbackUri))
-                {
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        Dictionary<String, String> loginparams = TwitterClient.HTTPQuery(await TwitterClient.ConvertStreamAsync(response.Content));
-
-                        if (loginparams["oauth_callback_confirmed"] == "true")
-                        {
-                            //"Authorizing this app on your account...";
-                            Vis.Phase = LoginPhase.AuthorizingApp;
-                            WebView webView1 = Vis.SetWebView(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
-                            webView1.LoadCompleted += new Windows.UI.Xaml.Navigation.LoadCompletedEventHandler(
-                                async delegate(Object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
-                                {
-                                    if (String.Format("{0}://{1}{2}", e.Uri.Scheme, e.Uri.Host, e.Uri.AbsolutePath) == CallbackUri)
-                                    {
-                                        //"Verifying your temporary twitter token...";
-                                        Vis.Phase = LoginPhase.VerifyingTempToken;
-                                        //ChildGrid.Children.Remove(webviewgrid);
-                                        Vis.RemoveWebView();
-                                        String webparam = e.Uri.Query;
-                                        {
-                                            Dictionary<String, String> dict = TwitterClient.HTTPQuery(webparam.Substring(1));
-                                            if (!dict.ContainsKey("denied"))
-                                            {
-                                                await webView1_LoadCompleted(TwitterClient.HTTPQuery(webparam.Substring(1)));
-                                                OnLoginCompleted(
-                                                    new LoginCompletedEventArgs() 
-                                                    { 
-                                                        AuthedAccountInfo = new AccountInfo() { AccountId = Client.AccountId.Value, AccountName = Client.AccountName},
-                                                        Succeed = true });
-                                            }
-                                            else
-                                            {
-                                                OnLoginCompleted(new LoginCompletedEventArgs() { Succeed = false });
-                                            }
-                                        }
-                                    }
-                                });
-                            webView1.Navigate(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
-                            Client.oauth_token_secret = loginparams["oauth_token_secret"];
-                        }
-                        else
-                        {
-                            //Vis.CurrentMessage = "Login Failed, oauth_callback confirming failed.";
-                        }
-                    }
-                    else
-                    {
-                        //Vis.CurrentMessage = await ConvertStreamAsync(response.Content);
-                    }
-                }
-            }
-
-            public async Task webView1_LoadCompleted(Dictionary<String, String> webparams)
-            {
-                //"Accessing your twitter token...";
-                Vis.Phase = LoginPhase.AccessingToken;
-                try
-                {
-                    Client.oauth_token = webparams["oauth_token"];
-                    using (HttpResponseMessage response = await Client.OAuthStream(HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
-                        NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterClient.NormalQuery.QueryType.Post)), null))
-                    {
-
-                        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                        {
-                            //"Loading your account information...";
-                            Vis.Phase = LoginPhase.LoadingAccountInformation;
-                            Dictionary<String, String> loginparams = TwitterClient.HTTPQuery((await ConvertStreamAsync(response.Content)));
-
-                            Client.oauth_token = loginparams["oauth_token"];
-                            Client.oauth_token_secret = loginparams["oauth_token_secret"];
-                            Client.AccountId = Convert.ToUInt64(loginparams["user_id"]);
-                            Client.AccountName = loginparams["screen_name"];
-
-                            //"Accessing your account image...";
-                            Vis.Phase = LoginPhase.GettingAccountImageURI;
-                            using (HttpResponseMessage userresponse = await TwitterClient.GetUserProfileImage(Client.AccountName))
-                            {
-                                if (userresponse.StatusCode == System.Net.HttpStatusCode.Redirect)
-                                {
-                                    //"Loading your account image...";
-                                    Client.AccountImageUri = userresponse.Headers.Location;
-                                    //Vis.Progress = 5;
-                                }
-                                else
-                                {
-                                    //Vis.CurrentMessage = userresponse.ReasonPhrase;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //Vis.CurrentMessage = response.ReasonPhrase;
-                        }
-                    };
-                }
-                catch (HttpRequestException hre)
-                {
-                    System.Diagnostics.Debug.WriteLine(hre.ToString());
-                }
-                catch (Exception ex)
-                {
-                    // For debugging
-                    System.Diagnostics.Debug.WriteLine(ex.ToString());
-                }
-            }
-        }
-
-        //public event LoginSucceedEventHandler LoginSucceed;
-        //public delegate void LoginSucceedEventHandler(object sender, LoginSucceedEventArgs e);
-        //public class LoginSucceedEventArgs : EventArgs
-        //{
-        //    public TwitterDatas.TwitterUser UserData;
-        //}
-        //protected virtual void OnLoginSucceed(LoginSucceedEventArgs e)
-        //{
-        //    if (LoginSucceed != null)
-        //    {
-        //        LoginSucceed(this, e);
-        //    }
-        //}
-
-        //public void LoadLoggedOn(String _oauth_token, String _oauth_token_secret, UInt64 accountUserId)
-        //{
-        //    oauth_token = _oauth_token;
-        //    oauth_token_secret = _oauth_token_secret;
-        //    AccountUserId = accountUserId;
-        //}
+        /// <summary>
+        /// 어떤 클라이언트인지 알리는 토큰입니다.
+        /// </summary>
+        readonly String oauth_consumer_key;
+        readonly String oauth_consumer_secret;
+        readonly System.Net.Http.Headers.ProductInfoHeaderValue UserAgent;
 
         public static DateTime ConvertToDateTime(String TimeString)
         {
             return DateTime.ParseExact(TimeString, "ddd MMM dd HH:mm:ss zzz yyyy", System.Globalization.CultureInfo.InvariantCulture);
         }
-
-        public Nullable<UInt64> AccountId
-        {
-            get { return (Nullable<UInt64>)GetValue(AccountIdProperty); }
-            private set { SetValue(AccountIdProperty, value); }
-        }
-        public String AccountName
-        {
-            get { return (String)GetValue(AccountNameProperty); }
-            set { SetValue(AccountNameProperty, value); }//private - 나중에 이름이 바뀔 때를 위하여 그냥 public set으로 만들기?
-        }
-        public Uri AccountImageUri
-        {
-            get { return (Uri)GetValue(AccountImageUriProperty); }
-            set { SetValue(AccountImageUriProperty, value); }//private - 위와 마찬가지
-        }
-        public Boolean IsClientLoggedOn
-        {
-            get
-            {
-                return (AccountId != null);
-            }
-        }
-
-        //메소드 모두에 적용한 뒤에 OAuth에서 ITwitterRequestQuery 직접 받도록 수정. typeof로 타입 인식할 수 있을 듯
-        //GetQueries니 GetPostQueries니 다 필요없고 GetQueryString GetPostQueryString이면 한방에 끝나는걸 왜이러고있지....!!!!!!
-        //if문으로 문자열에 더하고 더하고 하는것도 좋지만 지금 하는것처럼 리스트에 넣고 한방에 Join 돌리는 것이 더 괜찮을 듯하다.
-        //GetQueryString의 경우 쿼리가 두 부분으로 나뉘므로 주의
-
-        public struct NormalQuery : ITwitterRequestQuery
-        {
-            public enum QueryType
-            {
-                Type1, Type2, Post
-            }
-            public struct QueryKeyValue
-            {
-                public String Key;
-                public Object Value;
-                public QueryType Type;
-                public QueryKeyValue(String key, Object value, QueryType type)
-                {
-                    Key = key;
-                    Value = value;
-                    Type = type;
-                }
-            }
-            //normal queries
-            KeyValuePair<String, String>[] Query1;
-            KeyValuePair<String, String>[] Query2;
-            KeyValuePair<String, String>[] PostQuery;
-
-            //posts
-
-            public static NormalQuery MakeQuery(params QueryKeyValue[] keyvalues)
-            {
-                NormalQuery nquery = new NormalQuery();
-                SortedDictionary<String, String> query1 = new SortedDictionary<String, String>();
-                SortedDictionary<String, String> query2 = new SortedDictionary<String, String>();
-                SortedDictionary<String, String> postquery = new SortedDictionary<String, String>();
-                foreach (QueryKeyValue qkv in keyvalues)
-                {
-                    switch (qkv.Type)
-                    {
-                        case QueryType.Type1:
-                            {
-                                query1.Add(qkv.Key, qkv.Value.ToString());
-                                break;
-                            }
-                        case QueryType.Type2:
-                            {
-                                query2.Add(qkv.Key, qkv.Value.ToString());
-                                break;
-                            }
-                        case QueryType.Post:
-                            {
-                                postquery.Add(qkv.Key, qkv.Value.ToString());
-                                break;
-                            }
-                    }
-                }
-                nquery.Query1 = query1.ToArray();
-                nquery.Query2 = query2.ToArray();
-                nquery.PostQuery = postquery.ToArray();
-                return nquery;
-            }
-
-            public String GetQueryStringPart1()
-            {
-                List<String> returner = new List<String>();
-                foreach (KeyValuePair<String, String> pair in Query1)
-                {
-                    returner.Add(pair.Key + '=' + pair.Value);
-                }
-                return String.Join("&", returner);
-            }
-
-            public String GetQueryStringPart2()
-            {
-                List<String> returner = new List<String>();
-                foreach (KeyValuePair<String, String> pair in Query2)
-                {
-                    returner.Add(pair.Key + '=' + pair.Value);
-                }
-                return String.Join("&", returner);
-            }
-
-            public String GetQueryStringTotal()
-            {
-                SortedDictionary<String, String> dict = new SortedDictionary<String, String>();
-                foreach (KeyValuePair<String, String> pair in Query1)
-                {
-                    dict.Add(pair.Key, pair.Value);
-                }
-                foreach (KeyValuePair<String, String> pair in Query2)
-                {
-                    dict.Add(pair.Key, pair.Value);
-                }
-                List<String> returner = new List<String>();
-                foreach (KeyValuePair<String, String> pair in dict)
-                {
-                    returner.Add(pair.Key + '=' + pair.Value);
-                }
-                return String.Join("&", returner);
-            }
-
-            public String GetPostQueryString()
-            {
-                List<String> returner = new List<String>();
-                foreach (KeyValuePair<String, String> pair in PostQuery)
-                {
-                    returner.Add(pair.Key + '=' + pair.Value);
-                }
-                return String.Join("&", returner);
-            }
-        }
-
-        public struct SendTweetQuery : ITwitterRequestQuery
-        {
-            //normal queries
-            public Boolean include_entities;
-            public Nullable<UInt64> in_reply_to_status_id;
-
-            //posts
-            public String status;
-
-            public String GetQueryStringPart1()
-            {
-                List<String> returnList = new List<String>();
-                if (in_reply_to_status_id != null)
-                {
-                    returnList.Add("in_reply_to_status_id=" + in_reply_to_status_id.Value.ToString());
-                }
-                if (include_entities)
-                {
-                    returnList.Add("include_entities=true");
-                }
-
-                return String.Join("&", returnList);
-            }
-
-            public String GetQueryStringPart2()
-            {
-                return "";//&랑 concat하면 흐에에되잖아...null이 나을듯
-            }
-
-            public String GetQueryStringTotal()
-            {
-                List<String> returnList = new List<String>();
-                if (in_reply_to_status_id != null)
-                {
-                    returnList.Add("in_reply_to_status_id=" + in_reply_to_status_id.Value.ToString());
-                }
-                if (include_entities)
-                {
-                    returnList.Add("include_entities=true");
-                }
-
-                return String.Join("&", returnList);
-            }
-
-            public String GetPostQueryString()
-            {
-                if (status != null)
-                {
-                    return "status=" + AdditionalEscape(Uri.EscapeDataString(status));
-                }
-                else
-                {
-                    throw new Exception("There is no status message. Status message must be in this query.");
-                }
-            }
-        }
-
-        public class RefreshQuery : ITwitterRequestQuery
-        {
-            //normal queries
-            public Boolean include_entities;
-            public Nullable<UInt64> since_id;
-            public Boolean include_rts;
-            public String screen_name;
-
-            //posts
-            public String GetQueryStringPart1()
-            {
-                List<String> returnList = new List<String>();
-                if (include_entities)//Boolean은 False일 땐 안 넣으니 Nullable 빼고 false일 때 안 넣기만 하면 될듯. 값은 무조건 true 넣게 하고
-                {
-                    returnList.Add("include_entities=true");
-                }
-                if (include_rts)
-                {
-                    returnList.Add("include_rts=true");
-                }
-
-                return String.Join("&", returnList);
-            }
-
-            public String GetQueryStringPart2()
-            {
-                List<String> returnList = new List<String>();
-                if (screen_name != null)
-                {
-                    returnList.Add("screen_name=" + screen_name.ToString());
-                }
-                if (since_id != null)
-                {
-                    returnList.Add("since_id=" + since_id.Value);
-                }
-
-                return String.Join("&", returnList);
-            }
-
-            public String GetQueryStringTotal()
-            {
-                List<String> returnList = new List<String>();
-                if (include_entities)
-                {
-                    returnList.Add("include_entities=true");
-                }
-                if (include_rts)
-                {
-                    returnList.Add("include_rts=true");
-                }
-                if (screen_name != null)
-                {
-                    returnList.Add("screen_name=" + screen_name.ToString());
-                }
-                if (since_id != null)
-                {
-                    returnList.Add("since_id=" + since_id.Value);
-                }
-
-                return String.Join("&", returnList);
-            }
-
-            public String GetPostQueryString()
-            {
-                return "";
-            }
-        }
-
-        private enum RequestType
-        {
-            Tweet = 0, Retweet, Destroy = 1, Refresh = 2
-        }
-
-        public static TweetColumnQuery TimelineUrl
-        {
-            get
-            {
-                return new TweetColumnQuery()
-                {
-                    twitterUrl = "https://api.twitter.com/1/statuses/home_timeline.json",
-                    queries = new RefreshQuery()
-                    {
-                        include_entities = true,
-                        include_rts = true,
-                    }
-                };
-            }
-        }
-        public static TweetColumnQuery MentionUrl
-        {
-            get
-            {
-                return new TweetColumnQuery()
-                {
-                    twitterUrl = "https://api.twitter.com/1/statuses/mentions.json",
-                    queries = new RefreshQuery()
-                    {
-                        include_entities = true,
-                        include_rts = true,
-                    }
-                };
-            }
-        }
-        public static TweetColumnQuery UserUrl(String screen_name)
-        {
-            return new TweetColumnQuery()
-            {
-                twitterUrl = "http://api.twitter.com/1/statuses/user_timeline.json",
-                queries = new RefreshQuery()
-                {
-                    include_entities = true,
-                    include_rts = true,
-                    screen_name = screen_name
-                }
-                //new SortedDictionary<String, String>()
-                //{
-                //    { "include_entities", "true" },
-                //    { "include_rts", "true" },
-                //    { "screen_name", screen_name } 
-                //}
-            };
-        }
-
-        public struct TweetColumnQuery
-        {
-            public String twitterUrl;
-            public RefreshQuery queries;
-        }
         //SortedDictionary로 OAuth 패러미터들 집어넣기
         //OAuth 클래스 만들어서 속성으로 패러미터 넣기? 는 속성 너무 많이 생길 듯
         //OAuth용 클래스 만들어서 속성으로 토큰 넣고 지금처럼 메소드는 OAuth 그대로 쓰기 - 괜찮은듯
         //SendTweet("트윗내용"); 이렇게만 하는 게 가능하도록
-        //
-
-        /// <summary>
-        /// 어떤 클라이언트인지 알리는 토큰입니다.
-        /// </summary>
-        readonly String oauth_consumer_key, oauth_consumer_secret;
 
         /// <summary>
         /// 유저가 누구인지 알리는 토큰입니다.
         /// </summary>
-        String oauth_token, oauth_token_secret;
+        //String oauth_token, oauth_token_secret;
 
         /// <summary>
         /// 트위터 서비스에 필요한 작업을 알아서 해 주는 클래스입니다
@@ -622,22 +70,24 @@ namespace NemoKachi.TwitterWrapper
         /// <param name="_oauth_consumer_key">클라이언트의 oauth_consumer_key를 주세요</param>
         /// <param name="_oauth_consumer_secret">클라이언트의 oauth_consumer_secret을 주세요</param>
         /// <param name="textBlock">디버깅용입니다</param>
-        public TwitterClient(String consumer_key, String consumer_secret)
+        public TwitterClient(String consumer_key, String consumer_secret, System.Net.Http.Headers.ProductInfoHeaderValue userAgent)
         {
             //InitializeComponent();
             oauth_consumer_key = consumer_key;
             oauth_consumer_secret = consumer_secret;
+            UserAgent = userAgent;
         }
-        public TwitterClient(String consumer_key, String consumer_secret, String token, String token_secret, UInt64 Id, String Name)
-        {
-            //InitializeComponent();
-            oauth_consumer_key = consumer_key;
-            oauth_consumer_secret = consumer_secret;
-            oauth_token = token;
-            oauth_token_secret = token_secret;
-            AccountId = Id;
-            AccountName = Name;
-        }
+
+        //public TwitterClient(String consumer_key, String consumer_secret, String token, String token_secret, UInt64 Id, String Name)
+        //{
+        //    //InitializeComponent();
+        //    oauth_consumer_key = consumer_key;
+        //    oauth_consumer_secret = consumer_secret;
+        //    oauth_token = token;
+        //    oauth_token_secret = token_secret;
+        //    AccountId = Id;
+        //    AccountName = Name;
+        //}
 
         /// <summary>
         /// UriEscape는 몇 가지 덜 처리돼서 추가로 처리
@@ -685,63 +135,69 @@ namespace NemoKachi.TwitterWrapper
         /// </summary>
         /// <param name="status">트윗에 넣을 텍스트입니다</param>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다</returns>
-        public async Task<HttpResponseMessage> SendTweet(SendTweetQuery tweetQuery)
+        public async Task<HttpResponseMessage> SendTweet(AccountToken aToken, SendTweetQuery tweetQuery)
         {
             return await OAuthStream(
-                    HttpMethod.Post,
-                    "https://api.twitter.com/1/statuses/update.json", tweetQuery, null);
+                aToken,
+                HttpMethod.Post,
+                "https://api.twitter.com/1/statuses/update.json", tweetQuery, null);
         }
 
-        public async Task<HttpResponseMessage> SendRetweet(UInt64 id)
+        public async Task<HttpResponseMessage> SendRetweet(AccountToken aToken, UInt64 id)
         {
             return await OAuthStream(
-                    HttpMethod.Post,
-                    String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", id),
-                    NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1)), null);
+                aToken,
+                HttpMethod.Post,
+                String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", id),
+                NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1)), null);
         }
 
-        public async Task<HttpResponseMessage> Destroy(UInt64 id)
+        public async Task<HttpResponseMessage> Destroy(AccountToken aToken, UInt64 id)
         {
             return await OAuthStream(
-                    HttpMethod.Post,
-                    String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", id),
-                    NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1)), null);
+                aToken,
+                HttpMethod.Post,
+                String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", id),
+                NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1)), null);
         }
 
         /// <summary>
         /// 타임라인을 리프레시합니다.
         /// </summary>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다. 리프레시된 트윗들이 컨텐트로 포함됩니다.</returns>
-        public async Task<HttpResponseMessage> Refresh(String url, RefreshQuery refreshQuery)
+        public async Task<HttpResponseMessage> Refresh(AccountToken aToken, String url, RefreshQuery refreshQuery)
         {
             return await OAuthStream(
+                aToken,
                 HttpMethod.Get,
                 url, refreshQuery, null);
         }
 
-        public async Task<HttpResponseMessage> RefreshStream(String url, ITwitterRequestQuery requestQuery)
+        public async Task<HttpResponseMessage> RefreshStream(AccountToken aToken, String url, ITwitterRequestQuery requestQuery)
         {
             return await OAuthSocket(
-                 HttpMethod.Get,
-                 url, requestQuery);//new RefreshQuery() { include_entities = true, include_rts = true }
+                aToken,
+                HttpMethod.Get,
+                url, requestQuery);//new RefreshQuery() { include_entities = true, include_rts = true }
         }
 
-        public async Task<HttpResponseMessage> GetUserInformation(UInt64 Id)
+        public async Task<HttpResponseMessage> GetUserInformation(AccountToken aToken, UInt64 Id)
         {
             return await OAuthStream(
-                 HttpMethod.Get,
-                 "https://api.twitter.com/1/users/show.json",
-                 NormalQuery.MakeQuery(
+                aToken,
+                HttpMethod.Get,
+                "https://api.twitter.com/1/users/show.json",
+                NormalQuery.MakeQuery(
                     new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1),
                     new NormalQuery.QueryKeyValue("user_id", Id.ToString(), NormalQuery.QueryType.Type2)), null);//new RefreshQuery() { include_entities = true, include_rts = true }
         }
 
-        public static async Task<HttpResponseMessage> GetUserProfileImage(String ScreenName)
+        public async Task<HttpResponseMessage> GetUserProfileImage(String ScreenName)
         {
             return await NonAuthStream(
-                 HttpMethod.Get,
-                 "https://api.twitter.com/1/users/profile_image",
-                 NormalQuery.MakeQuery(
+                HttpMethod.Get,
+                "https://api.twitter.com/1/users/profile_image",
+                NormalQuery.MakeQuery(
                     new NormalQuery.QueryKeyValue("screen_name", ScreenName, NormalQuery.QueryType.Type2),
                     new NormalQuery.QueryKeyValue("size", "bigger", NormalQuery.QueryType.Type2)));//new RefreshQuery() { include_entities = true, include_rts = true }
         }
@@ -1057,7 +513,7 @@ namespace NemoKachi.TwitterWrapper
         //    }
         //}
 
-        public static async Task<HttpResponseMessage> NonAuthStream(HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery)
+        public async Task<HttpResponseMessage> NonAuthStream(HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery)
         {
             {
                 String querytotal = twtQuery.GetQueryStringTotal();
@@ -1083,7 +539,7 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<HttpResponseMessage> OAuthStream(HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery, String callbackUri)
+        public async Task<HttpResponseMessage> OAuthStream(AccountToken aToken, HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery, String callbackUri)
         {
             const String oauth_version = "1.0";
             const String oauth_signature_method = "HMAC-SHA1";
@@ -1100,9 +556,9 @@ namespace NemoKachi.TwitterWrapper
             baseStringList.Add("oauth_nonce=" + oauth_nonce);
             baseStringList.Add("oauth_signature_method=" + oauth_signature_method);
             baseStringList.Add("oauth_timestamp=" + oauth_timestamp);
-            if (oauth_token != null)
+            if (aToken.oauth_token != null)
             {
-                baseStringList.Add("oauth_token=" + oauth_token);
+                baseStringList.Add("oauth_token=" + aToken.oauth_token);
             }
             baseStringList.Add("oauth_version=" + oauth_version);
 
@@ -1141,9 +597,9 @@ namespace NemoKachi.TwitterWrapper
             System.Diagnostics.Debug.WriteLine(baseString);
 
             String compositeKey = Uri.EscapeDataString(oauth_consumer_secret) + "&";
-            if (oauth_token_secret != null)
+            if (aToken.oauth_token_secret != null)
             {
-                compositeKey += Uri.EscapeDataString(oauth_token_secret);
+                compositeKey += Uri.EscapeDataString(aToken.oauth_token_secret);
             }
 
             String oauth_signature = HMAC_SHA1Hasher(baseString, compositeKey);
@@ -1157,9 +613,9 @@ namespace NemoKachi.TwitterWrapper
             headerStringList.Add(String.Format("oauth_signature_method=\"{0}\"", Uri.EscapeDataString(oauth_signature_method)));
             headerStringList.Add(String.Format("oauth_timestamp=\"{0}\"", Uri.EscapeDataString(oauth_timestamp)));
             headerStringList.Add(String.Format("oauth_consumer_key=\"{0}\"", Uri.EscapeDataString(oauth_consumer_key)));
-            if (oauth_token != null)
+            if (aToken.oauth_token != null)
             {
-                headerStringList.Add("oauth_token" + String.Format("=\"{0}\"", Uri.EscapeDataString(oauth_token)));
+                headerStringList.Add("oauth_token" + String.Format("=\"{0}\"", Uri.EscapeDataString(aToken.oauth_token)));
             }
             headerStringList.Add(String.Format("oauth_signature=\"{0}\"", Uri.EscapeDataString(oauth_signature)));
             headerStringList.Add(String.Format("oauth_version=\"{0}\"", Uri.EscapeDataString(oauth_version)));
@@ -1193,7 +649,7 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<HttpResponseMessage> OAuthSocket(HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery)
+        public async Task<HttpResponseMessage> OAuthSocket(AccountToken aToken, HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery)
         {
             const String oauth_version = "1.0";
             const String oauth_signature_method = "HMAC-SHA1";
@@ -1206,9 +662,9 @@ namespace NemoKachi.TwitterWrapper
             baseStringList.Add("oauth_nonce=" + oauth_nonce);
             baseStringList.Add("oauth_signature_method=" + oauth_signature_method);
             baseStringList.Add("oauth_timestamp=" + oauth_timestamp);
-            if (oauth_token != null)
+            if (aToken.oauth_token != null)
             {
-                baseStringList.Add("oauth_token=" + oauth_token);
+                baseStringList.Add("oauth_token=" + aToken.oauth_token);
             }
             baseStringList.Add("oauth_version=" + oauth_version);
 
@@ -1247,9 +703,9 @@ namespace NemoKachi.TwitterWrapper
             System.Diagnostics.Debug.WriteLine(baseString);
 
             String compositeKey = Uri.EscapeDataString(oauth_consumer_secret) + "&";
-            if (oauth_token_secret != null)
+            if (aToken.oauth_token_secret != null)
             {
-                compositeKey += Uri.EscapeDataString(oauth_token_secret);
+                compositeKey += Uri.EscapeDataString(aToken.oauth_token_secret);
             }
 
             String oauth_signature = HMAC_SHA1Hasher(baseString, compositeKey);
@@ -1259,9 +715,9 @@ namespace NemoKachi.TwitterWrapper
             headerStringList.Add(String.Format("oauth_signature_method=\"{0}\"", Uri.EscapeDataString(oauth_signature_method)));
             headerStringList.Add(String.Format("oauth_timestamp=\"{0}\"", Uri.EscapeDataString(oauth_timestamp)));
             headerStringList.Add(String.Format("oauth_consumer_key=\"{0}\"", Uri.EscapeDataString(oauth_consumer_key)));
-            if (oauth_token != null)
+            if (aToken.oauth_token != null)
             {
-                headerStringList.Add("oauth_token" + String.Format("=\"{0}\"", Uri.EscapeDataString(oauth_token)));
+                headerStringList.Add("oauth_token" + String.Format("=\"{0}\"", Uri.EscapeDataString(aToken.oauth_token)));
             }
             headerStringList.Add(String.Format("oauth_signature=\"{0}\"", Uri.EscapeDataString(oauth_signature)));
             headerStringList.Add(String.Format("oauth_version=\"{0}\"", Uri.EscapeDataString(oauth_version)));
@@ -1392,29 +848,5 @@ namespace NemoKachi.TwitterWrapper
         //    //output.Text += Environment.NewLine + responseBodyAsText;
         //    output.Text += response.Content.ReadAsString() + Environment.NewLine;
         //}
-
-        static readonly DependencyProperty AccountIdProperty =
-            DependencyProperty.Register("AccountId",
-            typeof(Nullable<UInt64>),
-            typeof(TwitterClient),
-            new PropertyMetadata(null));
-
-        static readonly DependencyProperty AccountNameProperty =
-            DependencyProperty.Register("AccountName",
-            typeof(String),
-            typeof(TwitterClient),
-            new PropertyMetadata(null));
-
-        static readonly DependencyProperty AccountImageUriProperty =
-            DependencyProperty.Register("AccountImageUri",
-            typeof(Uri),
-            typeof(TwitterClient),
-            new PropertyMetadata(null));
-
-        //static readonly DependencyProperty StreamingProperty =
-        //    DependencyProperty.Register("StreamingState",
-        //    "Object",
-        //    typeof(TwitterClient).FullName,
-        //    new PropertyMetadata(UserStreamingState.None));
     }
 }
