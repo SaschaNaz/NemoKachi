@@ -150,7 +150,7 @@ namespace NemoKachi.TwitterWrapper
                 }
             }
 
-            public async Task ActivateAsync()//ActivateAsync 불러오는 메소드에서 TimeoutException 받으면 다시 액티베이팅하게 만들기
+            public async Task ActivateAsync(AccountToken aToken)//ActivateAsync 불러오는 메소드에서 TimeoutException 받으면 다시 액티베이팅하게 만들기
             {
                 if (IsActivated)
                 {
@@ -160,7 +160,7 @@ namespace NemoKachi.TwitterWrapper
                 //StreamState = UserStreamingState.Connecting;
                 try
                 {
-                    response = await ColumnQuery.Client.RefreshStream(ColumnQuery.StreamUrl.AbsoluteUri, ColumnQuery.GetRequestQuery());
+                    response = await ColumnQuery.Client.RefreshStream(aToken, ColumnQuery.StreamUrl.AbsoluteUri, ColumnQuery.GetRequestQuery());
                     //if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     //{
                     //    StreamState = UserStreamingState.Streaming;

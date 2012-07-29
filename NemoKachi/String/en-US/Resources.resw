@@ -126,7 +126,7 @@
   <data name="GettingAccountImageURI" xml:space="preserve">
     <value>Getting your account image URI...</value>
   </data>
-  <data name="LoadingAccountInformation" xml:space="preserve">
+  <data name="LoadingAccountTokenrmation" xml:space="preserve">
     <value>Loading your account information...</value>
   </data>
   <data name="VerifyingTempToken" xml:space="preserve">

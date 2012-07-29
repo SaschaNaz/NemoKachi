@@ -33,10 +33,7 @@ namespace NemoKachi
         {
             String ErrorMessage = null;
 
-            TwitterClient client = new TwitterClient(
-                (String)Application.Current.Resources["oauth_consumer_key"],
-                (String)Application.Current.Resources["oauth_consumer_secret"]);
-            TwitterClient.LoginHandler lhandler = new TwitterClient.LoginHandler(client, lvisual, "http://ao-k-ilapis.kr/");
+            TwitterClient.LoginHandler lhandler = new TwitterClient.LoginHandler(Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient, lvisual, "http://ao-k-ilapis.kr/");
 
             //lhandler.LoginCompleted += new TwitterClient.LoginHandler.LoginCompletedEventHandler(
             //    async delegate(Object lsender, TwitterClient.LoginHandler.LoginCompletedEventArgs le)
@@ -70,9 +67,9 @@ namespace NemoKachi
 
             try
             {
-                TwitterClient.AccountInfo loginArgs = await lhandler.AccountLoginAsync();
+                AccountToken loginArgs = await lhandler.AccountLoginAsync();
                 await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
-                ((Application.Current.Resources["accountsCollection"] as CollectionViewSource).Source as List<TwitterClient>).Add(client);
+                ((Application.Current.Resources["accountsCollection"] as CollectionViewSource).Source as List<AccountToken>).Add(loginArgs);
                 Frame.Navigate(typeof(MainPage));
                 //if (loginTask.IsCompleted)
                 //{

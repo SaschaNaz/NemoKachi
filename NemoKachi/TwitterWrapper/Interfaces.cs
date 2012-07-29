@@ -16,7 +16,7 @@ namespace NemoKachi.TwitterWrapper
     {
         Boolean IsActivated { get; }
         void AddTweetInStream(Tweet twt);
-        Task ActivateAsync();
+        Task ActivateAsync(AccountToken aToken);
         ITwitterColumnQuery ColumnQuery { get; }
     }
 
