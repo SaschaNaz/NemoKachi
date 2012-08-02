@@ -56,7 +56,6 @@ namespace NemoKachi
                     "HeOeHqoUvfzrcRNUM90iPw",
                     "nNNdPQEhAbu986vIKnqRfjScwfZzvhVovSUT5iWhavA",
                     new System.Net.Http.Headers.ProductInfoHeaderValue("NemoKachi", "Alpha-RP")));
-            (Application.Current.Resources["accountsCollection"] as CollectionViewSource).Source = new List<TwitterWrapper.AccountToken>();
 
             // Create a Frame to act navigation context and navigate to the first page
             var rootFrame = new Frame();

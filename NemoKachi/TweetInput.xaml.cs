@@ -28,7 +28,7 @@ namespace NemoKachi
             String sendText;
             SendTextBox.Document.GetText(Windows.UI.Text.TextGetOptions.None, out sendText);
             TwitterWrapper.TwitterDatas.Tweet twt = await (Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient).SendTweet(
-                ((Application.Current.Resources["accountsCollection"] as CollectionViewSource).Source as List<TwitterWrapper.AccountToken>)[0],
+                (Application.Current.Resources["AccountCollector"] as AccountTokenCollector).TokenCollection[0],
                 new TwitterWrapper.SendTweetRequest()
                 {
                    status = sendText

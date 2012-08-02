@@ -58,7 +58,7 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
-            <GridView HorizontalAlignment="Left" Width="853" Height="116" ItemsSource="{Binding Source={StaticResource accountsCollection}}"/>
+            <GridView HorizontalAlignment="Left" Width="853" Height="116" ItemsSource="{Binding TokenCollection}" DataContext="{StaticResource AccountCollector}"/>
             <local:TweetInput Width="600" Height="300" />
         </StackPanel>
         
