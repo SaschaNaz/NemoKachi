@@ -53,7 +53,7 @@ namespace NemoKachi.TwitterWrapper
             /// <summary>
             /// Phase 5
             /// </summary>
-            LoadingAccountTokenrmation,
+            LoadingAccountInformation,
             /// <summary>
             /// Phase 6
             /// </summary>
@@ -141,7 +141,7 @@ namespace NemoKachi.TwitterWrapper
                     Token,
                     HttpMethod.Post,
                     "https://api.twitter.com/oauth/request_token",
-                    NormalQuery.MakeQuery(), CallbackUri))
+                    TwitterRequest.MakeRequest(), CallbackUri))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -204,13 +204,13 @@ namespace NemoKachi.TwitterWrapper
                 {
                     Token.oauth_token = webparams["oauth_token"];
                     using (HttpResponseMessage response = await Client.OAuthStream(Token, HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
-                        NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterClient.NormalQuery.QueryType.Post)), null))
+                        TwitterRequest.MakeRequest(new TwitterRequest.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterRequest.RequestType.Post)), null))
                     {
 
                         if (response.StatusCode == System.Net.HttpStatusCode.OK)
                         {
                             //"Loading your account information...";
-                            Vis.Phase = LoginPhase.LoadingAccountTokenrmation;
+                            Vis.Phase = LoginPhase.LoadingAccountInformation;
                             Dictionary<String, String> loginparams = TwitterClient.HTTPQuery((await ConvertStreamAsync(response.Content)));
 
                             Token.oauth_token = loginparams["oauth_token"];

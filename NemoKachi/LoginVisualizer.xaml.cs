@@ -40,8 +40,8 @@ namespace NemoKachi
                     return loader.GetString("VerifyingTempToken");
                 case TwitterClient.LoginPhase.AccessingToken:
                     return loader.GetString("AccessingToken");
-                case TwitterClient.LoginPhase.LoadingAccountTokenrmation:
-                    return loader.GetString("LoadingAccountTokenrmation");
+                case TwitterClient.LoginPhase.LoadingAccountInformation:
+                    return loader.GetString("LoadingAccountInformation");
                 case TwitterClient.LoginPhase.GettingAccountImageURI:
                     return loader.GetString("GettingAccountImageURI");
                 default:
