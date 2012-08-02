@@ -14,7 +14,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace NemoKachi
+namespace NemoKachi.CustomElements
 {
     public sealed partial class TweetInput : UserControl
     {
@@ -27,7 +27,7 @@ namespace NemoKachi
         {
             String sendText;
             SendTextBox.Document.GetText(Windows.UI.Text.TextGetOptions.None, out sendText);
-            TwitterWrapper.TwitterDatas.Tweet twt = await (Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient).SendTweet(
+            TwitterWrapper.TwitterDatas.Tweet twt = await (Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient).SendTweetAsync(
                 (Application.Current.Resources["AccountCollector"] as AccountTokenCollector).TokenCollection[0],
                 new TwitterWrapper.SendTweetRequest()
                 {

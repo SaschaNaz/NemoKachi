@@ -39,20 +39,20 @@ namespace NemoKachi
         /// session.  This will be null the first time a page is visited.</param>
         protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
-            // Restore values stored in session state.
-            if (pageState != null)
-            {
-                if (pageState.ContainsKey("isLoginSucceed"))
-                    if ((Boolean)pageState["isLoginSucceed"] == true)
-                        greetingOutput.Text = "Login Succeed";
-            }
+            //// Restore values stored in session state.
+            //if (pageState != null)
+            //{
+            //    if (pageState.ContainsKey("isLoginSucceed"))
+            //        if ((Boolean)pageState["isLoginSucceed"] == true)
+            //            greetingOutput.Text = "Login Succeed";
+            //}
 
-            Windows.Storage.ApplicationDataContainer localSettings =
-                Windows.Storage.ApplicationData.Current.LocalSettings;
-            if (localSettings.Values.ContainsKey("userName"))
-            {
-                nameInput.Text = localSettings.Values["userName"].ToString();
-            }
+            //Windows.Storage.ApplicationDataContainer localSettings =
+            //    Windows.Storage.ApplicationData.Current.LocalSettings;
+            //if (localSettings.Values.ContainsKey("userName"))
+            //{
+            //    nameInput.Text = localSettings.Values["userName"].ToString();
+            //}
 
         }
 
@@ -64,16 +64,16 @@ namespace NemoKachi
         /// <param name="pageState">An empty dictionary to be populated with serializable state.</param>
         protected override void SaveState(Dictionary<String, Object> pageState)
         {
-            pageState["isLoginSucceed"] = true;
+            //pageState["isLoginSucceed"] = true;
         }
 
-        private void TweetIDRecieved(object sender, RoutedEventArgs e)
-        {
-            Windows.Storage.ApplicationDataContainer localSettings =
-                Windows.Storage.ApplicationData.Current.LocalSettings;
-            localSettings.Values["userName"] = nameInput.Text;
+        //private void TweetIDRecieved(object sender, RoutedEventArgs e)
+        //{
+        //    Windows.Storage.ApplicationDataContainer localSettings =
+        //        Windows.Storage.ApplicationData.Current.LocalSettings;
+        //    localSettings.Values["userName"] = nameInput.Text;
 
-            greetingOutput.Text = "Login Succeed";
-        }
+        //    greetingOutput.Text = "Login Succeed";
+        //}
     }
 }

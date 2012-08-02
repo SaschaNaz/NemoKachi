@@ -1,0 +1,21 @@
+﻿<UserControl
+    x:Class="NemoKachi.CustomElements.TimelineColumn"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NemoKachi.CustomElements"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="800"
+    d:DesignWidth="400">
+    <!--아이템즈컨트롤에서 아이템 크기 조정이 힘들던데 템플릿에서 컨버터 넣어서 그리드뷰 크기를 받아서 패러미터를 통해 얼마 빼서 높이 정하는 구조로 만들기-->
+    
+    <Grid Background="Black" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding ColumnTitle}" FontSize="50" FontWeight="Light"/>
+        <Button Style="{StaticResource IconButtonStyle}" HorizontalAlignment="Right" Content="&#xE117;" FontSize="40" Click="Button_Click_1"/>
+    </Grid>
+</UserControl>

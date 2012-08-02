@@ -15,34 +15,46 @@ using NemoKachi.TwitterWrapper.TwitterDatas;
 
 namespace NemoKachi.TwitterWrapper
 {
-    public class AccountToken
+    public class AccountToken : DependencyObject
     {
         public String oauth_token;
         public String oauth_token_secret;
-        public String AccountName;
-        public UInt64 AccountId;
-        public Uri AccountImageUri;
+        public String AccountName
+        {
+            get { return (String)GetValue(AccountNameProperty); }
+            set { SetValue(AccountNameProperty, value); }
+        }
+        public UInt64 AccountId
+        {
+            get { return (UInt64)GetValue(AccountIdProperty); }
+            set { SetValue(AccountIdProperty, value); }
+        }
+        public Uri AccountImageUri
+        {
+            get { return (Uri)GetValue(AccountImageUriProperty); }
+            set { SetValue(AccountImageUriProperty, value); }
+        }
 
-        static readonly DependencyProperty AccountIdProperty =
+        public static readonly DependencyProperty AccountIdProperty =
             DependencyProperty.Register("AccountId",
             typeof(UInt64),
             typeof(AccountToken),
             new PropertyMetadata(0ul));
 
-        static readonly DependencyProperty AccountNameProperty =
+        public static readonly DependencyProperty AccountNameProperty =
             DependencyProperty.Register("AccountName",
             typeof(String),
             typeof(AccountToken),
             new PropertyMetadata(null));
 
-        static readonly DependencyProperty AccountImageUriProperty =
+        public static readonly DependencyProperty AccountImageUriProperty =
             DependencyProperty.Register("AccountImageUri",
             typeof(Uri),
             typeof(AccountToken),
             new PropertyMetadata(null));
     }
 
-    public partial class TwitterClient : DependencyObject
+    public partial class TwitterClient
     {
         /// <summary>
         /// 어떤 클라이언트인지 알리는 토큰입니다.
@@ -136,7 +148,7 @@ namespace NemoKachi.TwitterWrapper
         /// </summary>
         /// <param name="status">트윗에 넣을 텍스트입니다</param>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다</returns>
-        public async Task<Tweet> SendTweet(AccountToken aToken, SendTweetRequest tweetQuery)
+        public async Task<Tweet> SendTweetAsync(AccountToken aToken, SendTweetRequest tweetQuery)
         {
             HttpResponseMessage response = await OAuthStream(
                 aToken, HttpMethod.Post,
@@ -164,11 +176,18 @@ namespace NemoKachi.TwitterWrapper
         /// 타임라인을 리프레시합니다.
         /// </summary>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다. 리프레시된 트윗들이 컨텐트로 포함됩니다.</returns>
-        public async Task<HttpResponseMessage> Refresh(AccountToken aToken, ITimelineData tlData)
+        public async Task<Tweet[]> RefreshAsync(AccountToken aToken, ITimelineData tlData)
         {
-            return await OAuthStream(
+            List<Tweet> tweets = new List<Tweet>();
+            HttpResponseMessage response = await OAuthStream(
                 aToken, HttpMethod.Get,
                 tlData.RestURI.OriginalString, tlData.GetRequest(), null);
+            JsonArray jary = JsonArray.Parse(await ConvertStreamAsync(response.Content));
+            foreach (JsonValue jo in jary)
+            {
+                tweets.Add(new Tweet(jo.GetObject()));
+            }
+            return tweets.ToArray();
         }
 
         public async Task<HttpResponseMessage> RefreshStream(AccountToken aToken, String url, TwitterRequest requestQuery)
