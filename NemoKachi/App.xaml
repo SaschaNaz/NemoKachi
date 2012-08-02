@@ -16,7 +16,7 @@
                  -->
                 <ResourceDictionary Source="Common/StandardStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <CollectionViewSource x:Key="accountsCollection"  />
+            <local:AccountTokenCollector x:Key="AccountCollector" />
             <Style TargetType="Button" x:Key="IconButtonStyle">
                 <Setter Property="MinWidth" Value="0"/>
                 <Setter Property="MinHeight" Value="0"/>

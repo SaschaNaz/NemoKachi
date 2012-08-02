@@ -69,7 +69,7 @@ namespace NemoKachi
             {
                 AccountToken loginArgs = await lhandler.AccountLoginAsync();
                 await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
-                ((Application.Current.Resources["accountsCollection"] as CollectionViewSource).Source as List<AccountToken>).Add(loginArgs);
+                (Application.Current.Resources["AccountCollector"] as AccountTokenCollector).TokenCollection.Add(loginArgs);
                 ITimelineData tlData = new FollowingTweetsData(loginArgs.AccountId, new LocalRefreshRequest());
                 Frame.Navigate(typeof(MainPage));
                 //if (loginTask.IsCompleted)
