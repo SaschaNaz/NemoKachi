@@ -11,6 +11,7 @@ using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
 using System.Net.Http;
 using Windows.Data.Json;
+using NemoKachi.TwitterWrapper.TwitterDatas;
 
 namespace NemoKachi.TwitterWrapper
 {
@@ -94,15 +95,15 @@ namespace NemoKachi.TwitterWrapper
         /// </summary>
         /// <param name="status">처리할 텍스트</param>
         /// <returns>Escape 완료된 텍스트를 반환합니다</returns>
-        static String AdditionalEscape(string status)
+        public static String AdditionalEscape(string status)
         {
             const String blockedChars = @"!()*'";
 
             String[] returner = new String[status.Length];
 
-            System.Threading.Tasks.Parallel.For(0, status.Length, (i) =>
+            Parallel.For(0, status.Length, (i) =>
             {
-                System.Threading.Tasks.Parallel.ForEach(blockedChars.ToCharArray(), (b) =>
+                Parallel.ForEach(blockedChars.ToCharArray(), (b) =>
                 {
                     if (status[i] == b)
                     {
@@ -118,7 +119,7 @@ namespace NemoKachi.TwitterWrapper
             return String.Join("", returner);
         }
 
-        public static Dictionary<String, String> HTTPQuery(String query)
+        static Dictionary<String, String> HTTPQuery(String query)
         {
             Dictionary<String, String> returner = new Dictionary<String, String>();
             String[] tempparams1 = query.Split('&');
@@ -135,61 +136,56 @@ namespace NemoKachi.TwitterWrapper
         /// </summary>
         /// <param name="status">트윗에 넣을 텍스트입니다</param>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다</returns>
-        public async Task<HttpResponseMessage> SendTweet(AccountToken aToken, SendTweetQuery tweetQuery)
+        public async Task<Tweet> SendTweet(AccountToken aToken, SendTweetRequest tweetQuery)
         {
-            return await OAuthStream(
-                aToken,
-                HttpMethod.Post,
+            HttpResponseMessage response = await OAuthStream(
+                aToken, HttpMethod.Post,
                 "https://api.twitter.com/1/statuses/update.json", tweetQuery, null);
+            return new Tweet(JsonObject.Parse(await ConvertStreamAsync(response.Content)));
         }
 
         public async Task<HttpResponseMessage> SendRetweet(AccountToken aToken, UInt64 id)
         {
             return await OAuthStream(
-                aToken,
-                HttpMethod.Post,
+                aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", id),
-                NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1)), null);
+                TwitterRequest.MakeRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
         }
 
         public async Task<HttpResponseMessage> Destroy(AccountToken aToken, UInt64 id)
         {
             return await OAuthStream(
-                aToken,
-                HttpMethod.Post,
+                aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", id),
-                NormalQuery.MakeQuery(new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1)), null);
+                TwitterRequest.MakeRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
         }
 
         /// <summary>
         /// 타임라인을 리프레시합니다.
         /// </summary>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다. 리프레시된 트윗들이 컨텐트로 포함됩니다.</returns>
-        public async Task<HttpResponseMessage> Refresh(AccountToken aToken, String url, RefreshQuery refreshQuery)
+        public async Task<HttpResponseMessage> Refresh(AccountToken aToken, ITimelineData tlData)
         {
             return await OAuthStream(
-                aToken,
-                HttpMethod.Get,
-                url, refreshQuery, null);
+                aToken, HttpMethod.Get,
+                tlData.RestURI.OriginalString, tlData.GetRequest(), null);
         }
 
-        public async Task<HttpResponseMessage> RefreshStream(AccountToken aToken, String url, ITwitterRequestQuery requestQuery)
+        public async Task<HttpResponseMessage> RefreshStream(AccountToken aToken, String url, TwitterRequest requestQuery)
         {
             return await OAuthSocket(
-                aToken,
-                HttpMethod.Get,
+                aToken, HttpMethod.Get,
                 url, requestQuery);//new RefreshQuery() { include_entities = true, include_rts = true }
         }
 
         public async Task<HttpResponseMessage> GetUserInformation(AccountToken aToken, UInt64 Id)
         {
             return await OAuthStream(
-                aToken,
-                HttpMethod.Get,
+                aToken, HttpMethod.Get,
                 "https://api.twitter.com/1/users/show.json",
-                NormalQuery.MakeQuery(
-                    new NormalQuery.QueryKeyValue("include_entities", "true", NormalQuery.QueryType.Type1),
-                    new NormalQuery.QueryKeyValue("user_id", Id.ToString(), NormalQuery.QueryType.Type2)), null);//new RefreshQuery() { include_entities = true, include_rts = true }
+                TwitterRequest.MakeRequest(
+                    new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
+                    new TwitterRequest.QueryKeyValue("user_id", Id.ToString(), TwitterRequest.RequestType.Type2)), null);//new RefreshQuery() { include_entities = true, include_rts = true }
         }
 
         public async Task<HttpResponseMessage> GetUserProfileImage(String ScreenName)
@@ -197,9 +193,9 @@ namespace NemoKachi.TwitterWrapper
             return await NonAuthStream(
                 HttpMethod.Get,
                 "https://api.twitter.com/1/users/profile_image",
-                NormalQuery.MakeQuery(
-                    new NormalQuery.QueryKeyValue("screen_name", ScreenName, NormalQuery.QueryType.Type2),
-                    new NormalQuery.QueryKeyValue("size", "bigger", NormalQuery.QueryType.Type2)));//new RefreshQuery() { include_entities = true, include_rts = true }
+                TwitterRequest.MakeRequest(
+                    new TwitterRequest.QueryKeyValue("screen_name", ScreenName, TwitterRequest.RequestType.Type2),
+                    new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)));//new RefreshQuery() { include_entities = true, include_rts = true }
         }
 
         //public async Task<HttpResponseMessage> MentionRefresh(String lastId)
@@ -513,10 +509,10 @@ namespace NemoKachi.TwitterWrapper
         //    }
         //}
 
-        public async Task<HttpResponseMessage> NonAuthStream(HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery)
+        public async Task<HttpResponseMessage> NonAuthStream(HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest)
         {
             {
-                String querytotal = twtQuery.GetQueryStringTotal();
+                String querytotal = twRequest.GetQueryStringTotal();
                 if (querytotal != "")
                 {
                     baseUrl += '?' + querytotal;
@@ -525,7 +521,7 @@ namespace NemoKachi.TwitterWrapper
 
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl);
             {
-                String postquery = twtQuery.GetPostQueryString();
+                String postquery = twRequest.GetPostQueryString();
                 if (postquery != "")
                 {
                     httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
@@ -539,7 +535,7 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<HttpResponseMessage> OAuthStream(AccountToken aToken, HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery, String callbackUri)
+        public async Task<HttpResponseMessage> OAuthStream(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, String callbackUri)
         {
             const String oauth_version = "1.0";
             const String oauth_signature_method = "HMAC-SHA1";
@@ -567,7 +563,7 @@ namespace NemoKachi.TwitterWrapper
             {
                 String AddString = "";
                 {
-                    String query1 = twtQuery.GetQueryStringPart1();
+                    String query1 = twRequest.GetQueryStringPart1();
                     if (query1 != "")
                     {
                         AddString += query1;
@@ -579,14 +575,14 @@ namespace NemoKachi.TwitterWrapper
                 }
                 AddString += String.Join("&", baseStringList);
                 {
-                    String postquery = twtQuery.GetPostQueryString();
+                    String postquery = twRequest.GetPostQueryString();
                     if (postquery != "")
                     {
                         AddString += '&' + postquery;
                     }
                 }
                 {
-                    String query2 = twtQuery.GetQueryStringPart2();
+                    String query2 = twRequest.GetQueryStringPart2();
                     if (query2 != "")
                     {
                         AddString += '&' + query2;
@@ -625,7 +621,7 @@ namespace NemoKachi.TwitterWrapper
             System.Diagnostics.Debug.WriteLine(authHeader);
 
             {
-                String querytotal = twtQuery.GetQueryStringTotal();
+                String querytotal = twRequest.GetQueryStringTotal();
                 if (querytotal != "")
                 {
                     baseUrl += '?' + querytotal;
@@ -634,7 +630,7 @@ namespace NemoKachi.TwitterWrapper
 
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl);
             {
-                String postquery = twtQuery.GetPostQueryString();
+                String postquery = twRequest.GetPostQueryString();
                 if (postquery != "")
                 {
                     httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
@@ -649,7 +645,7 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<HttpResponseMessage> OAuthSocket(AccountToken aToken, HttpMethod reqMethod, String baseUrl, ITwitterRequestQuery twtQuery)
+        public async Task<HttpResponseMessage> OAuthSocket(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest)
         {
             const String oauth_version = "1.0";
             const String oauth_signature_method = "HMAC-SHA1";
@@ -673,7 +669,7 @@ namespace NemoKachi.TwitterWrapper
             {
                 String AddString = "";
                 {
-                    String query1 = twtQuery.GetQueryStringPart1();
+                    String query1 = twRequest.GetQueryStringPart1();
                     if (query1 != "")
                     {
                         AddString += query1;
@@ -685,14 +681,14 @@ namespace NemoKachi.TwitterWrapper
                 }
                 AddString += String.Join("&", baseStringList);
                 {
-                    String postquery = twtQuery.GetPostQueryString();
+                    String postquery = twRequest.GetPostQueryString();
                     if (postquery != "")
                     {
                         AddString += '&' + postquery;
                     }
                 }
                 {
-                    String query2 = twtQuery.GetQueryStringPart2();
+                    String query2 = twRequest.GetQueryStringPart2();
                     if (query2 != "")
                     {
                         AddString += '&' + query2;
@@ -727,7 +723,7 @@ namespace NemoKachi.TwitterWrapper
             System.Diagnostics.Debug.WriteLine(authHeader);
 
             {
-                String querytotal = twtQuery.GetQueryStringTotal();
+                String querytotal = twRequest.GetQueryStringTotal();
                 if (querytotal != "")
                 {
                     baseUrl += '?' + querytotal;
@@ -742,7 +738,7 @@ namespace NemoKachi.TwitterWrapper
 
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl);
             {
-                String postquery = twtQuery.GetPostQueryString();
+                String postquery = twRequest.GetPostQueryString();
                 if (postquery != "")
                 {
                     httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
@@ -808,7 +804,7 @@ namespace NemoKachi.TwitterWrapper
         //    using (HttpResponseMessage response = await OAuthStream(
         //    HttpMethod.Post,
         //    "https://api.twitter.com/oauth/request_token",
-        //    NormalQuery.MakeQuery()))
+        //    TwitterRequest.MakeRequest()))
         //    {
         //        if (response.StatusCode == System.Net.HttpStatusCode.OK)
         //        {
