@@ -71,6 +71,11 @@ namespace NemoKachi
                 await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
                 (Application.Current.Resources["AccountCollector"] as AccountTokenCollector).TokenCollection.Add(loginArgs);
                 ITimelineData tlData = new FollowingTweetsData(loginArgs.AccountId, new LocalRefreshRequest());
+                ColumnData colData = new ColumnData(tlData);
+                #region temp
+                Application.Current.Resources.Add("tempColumn", colData);
+                #endregion
+
                 Frame.Navigate(typeof(MainPage));
                 //if (loginTask.IsCompleted)
                 //{

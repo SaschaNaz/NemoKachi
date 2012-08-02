@@ -341,6 +341,7 @@ namespace NemoKachi.TwitterWrapper
     {
         Uri RestURI { get; }
         Uri StreamURI { get; }
+        UInt64 AccountID { get; set; }
         TwitterRequest GetRequest();
     }
 

@@ -117,12 +117,16 @@
     <Compile Include="Common\LayoutAwarePage.cs" />
     <Compile Include="Common\RichTextColumns.cs" />
     <Compile Include="Common\SuspensionManager.cs" />
+    <Compile Include="CustomElements\TimelineColumn.xaml.cs">
+      <DependentUpon>TimelineColumn.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FirstRunPage.xaml.cs">
       <DependentUpon>FirstRunPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TweetInput.xaml.cs">
+    <Compile Include="CustomElements\TweetInput.xaml.cs">
       <DependentUpon>TweetInput.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TwitterHierarchy.cs" />
     <Compile Include="TwitterWrapper\Interfaces.cs" />
     <Compile Include="LoginVisualizer.xaml.cs">
       <DependentUpon>LoginVisualizer.xaml</DependentUpon>
@@ -150,7 +154,11 @@
     <Content Include="Assets\SplashScreen.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Common\ReadMe.txt" />
-    <Page Include="TweetInput.xaml">
+    <Page Include="CustomElements\TimelineColumn.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CustomElements\TweetInput.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
