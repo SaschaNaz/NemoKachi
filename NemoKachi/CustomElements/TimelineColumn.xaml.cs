@@ -20,6 +20,7 @@ namespace NemoKachi.CustomElements
 {
     public sealed partial class TimelineColumn : UserControl
     {
+
         public TimelineColumn()
         {
             this.InitializeComponent();
@@ -29,10 +30,16 @@ namespace NemoKachi.CustomElements
         {
             AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
             TwitterWrapper.TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient;
+
             Parallel.ForEach((this.DataContext as ColumnData).TimelineDatas, async delegate(TwitterWrapper.ITimelineData tlData)
             {
                 TwitterWrapper.AccountToken aToken = collector.GetTokenByID(tlData.AccountID);
-                await MainClient.RefreshAsync(aToken, tlData);
+
+                TwitterWrapper.TwitterDatas.Tweet[] tweets = await MainClient.RefreshAsync(aToken, tlData);
+                for (Int32 i = tweets.Length - 1; i >= 0; i--)
+                {
+                    (this.DataContext as ColumnData).AttachTweet(tweets[i]);
+                }
             });
         }
     }
