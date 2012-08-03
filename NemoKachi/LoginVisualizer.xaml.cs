@@ -82,6 +82,12 @@ namespace NemoKachi
         {
             this.InitializeComponent();
             DataContext = this;
+            Closed += LoginVisualizer_Closed;
+        }
+
+        void LoginVisualizer_Closed(object sender, RoutedEventArgs e)
+        {
+            RemoveWebView();
         }
 
         public WebView SetWebView(Uri AuthUri)

@@ -31,86 +31,39 @@ namespace NemoKachi
 
         async void Login()
         {
-            String ErrorMessage = null;
-
             TwitterClient.LoginHandler lhandler = new TwitterClient.LoginHandler(Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient, lvisual, "http://ao-k-ilapis.kr/");
-
-            //lhandler.LoginCompleted += new TwitterClient.LoginHandler.LoginCompletedEventHandler(
-            //    async delegate(Object lsender, TwitterClient.LoginHandler.LoginCompletedEventArgs le)
-            //    {
-            //        //Clients.Add(client);
-            //        //ClientView.SelectedItem = client;
-            //        //LayoutRoot.Children.Remove(visualizer);
-
-            //        if (le.Message == TwitterClient.LoginHandler.LoginMessage.Succeed)
-            //        {
-            //            await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
-            //            //TweetPager pager = new TweetPager() { Title = client.AccountName };
-            //            //pager.Columns.Add(new TweetColumnist() { Title = "Friends" });
-            //            //pager.Columns.Add(new TweetColumnist() { Title = "Mentions" });
-            //            //Pages.Add(pager);
-
-            //            //await new Windows.UI.Popups.MessageDialog("MetroKachi successfully accessed your twitter account.").ShowAsync();
-            //            //PageFrame.Navigate(typeof(TweetPage), pager);
-            //            //this.BottomAppBar.IsOpen = true;
-            //            //로그인 된 계정용의 새 페이지를 추가해서, 이벤트 뜨면 새 페이지로 바로 Navigate 하도록 함
-            //        }
-            //        else if (le.Message == TwitterClient.LoginHandler.LoginMessage.UserDenied)
-            //        {
-            //            await new Windows.UI.Popups.MessageDialog("Login process is cancelled by you.").ShowAsync();
-            //        }
-            //    });
-            //visualizer.Closed += new RoutedEventHandler(delegate
-            //{
-            //    LayoutRoot.Children.Remove(visualizer);
-            //});
-
-            try
+            AccountToken loginArgs = null;
+            while (loginArgs == null)
             {
-                AccountToken loginArgs = await lhandler.AccountLoginAsync();
-                await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
-                (Application.Current.Resources["AccountCollector"] as AccountTokenCollector).TokenCollection.Add(loginArgs);
-                ITimelineData tlData = new FollowingTweetsData(loginArgs.AccountId, new LocalRefreshRequest());
-                ColumnData colData = new ColumnData(tlData);
-                #region temp
-                Application.Current.Resources.Add("tempColumn", colData);
-                #endregion
+                String ErrorMessage = null;
+                try
+                {
+                    loginArgs = await lhandler.AccountLoginAsync();
+                }
+                catch (System.Net.Http.HttpRequestException)
+                {
+                    ErrorMessage = "Our magpie cannot dive into the internet. Please check your connection.";
+                }
+                catch (TaskCanceledException)
+                {
+                    ErrorMessage = "Was there some problem in authorizing? Our magpie will restart authorizing for you right now. Sorry for inconvinience.";
+                }
+                if (ErrorMessage != null)
+                {
+                    //LayoutRoot.Children.Remove(visualizer);
+                    await new Windows.UI.Popups.MessageDialog(ErrorMessage).ShowAsync();
+                }
+            }
 
-                Frame.Navigate(typeof(MainPage));
-                //if (loginTask.IsCompleted)
-                //{
-                //        //TweetPager pager = new TweetPager() { Title = client.AccountName };
-                //        //pager.Columns.Add(new TweetColumnist() { Title = "Friends" });
-                //        //pager.Columns.Add(new TweetColumnist() { Title = "Mentions" });
-                //        //Pages.Add(pager);
+            await new Windows.UI.Popups.MessageDialog("Login succeed").ShowAsync();
+            (Application.Current.Resources["AccountCollector"] as AccountTokenCollector).TokenCollection.Add(loginArgs);
+            ITimelineData tlData = new FollowingTweetsData(loginArgs.AccountId, new LocalRefreshRequest());
+            ColumnData colData = new ColumnData(tlData);
+            #region temp
+            Application.Current.Resources.Add("tempColumn", colData);
+            #endregion
 
-                //        //await new Windows.UI.Popups.MessageDialog("MetroKachi successfully accessed your twitter account.").ShowAsync();
-                //        //PageFrame.Navigate(typeof(TweetPage), pager);
-                //        //this.BottomAppBar.IsOpen = true;
-                //        //로그인 된 계정용의 새 페이지를 추가해서, 이벤트 뜨면 새 페이지로 바로 Navigate 하도록 함
-                //}
-                //else if (loginTask.IsCanceled)
-                //{
-                //    await new Windows.UI.Popups.MessageDialog("You canceled the process").ShowAsync();
-                //}
-                //else if (loginTask.IsFaulted)
-                //{
-                //    await new Windows.UI.Popups.MessageDialog("There were some problems.").ShowAsync();
-                //}
-            }
-            catch (System.Net.Http.HttpRequestException)
-            {
-                ErrorMessage = "The app cannot connect to the internet. Please check your connection.";
-            }
-            catch (TaskCanceledException)
-            {
-                ErrorMessage = "You canceled the process";
-            }
-            if (ErrorMessage != null)
-            {
-                //LayoutRoot.Children.Remove(visualizer);
-                await new Windows.UI.Popups.MessageDialog(ErrorMessage).ShowAsync();
-            }
+            Frame.Navigate(typeof(MainPage));
         }
 
         /// <summary>
