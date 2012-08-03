@@ -31,6 +31,7 @@ namespace NemoKachi.TwitterWrapper
             /// Removes WebView from ILoginVisualizer
             /// </summary>
             void RemoveWebView();
+            event RoutedEventHandler Closed;
         }
         public enum LoginPhase
         {
@@ -85,11 +86,10 @@ namespace NemoKachi.TwitterWrapper
             }
 
             readonly TwitterClient Client;
-            readonly AccountToken Token = new AccountToken();
             readonly ILoginVisualizer Vis;
             readonly String CallbackUri;
 
-            public LoginHandler(TwitterClient client,ILoginVisualizer vis, String callbackUri)
+            public LoginHandler(TwitterClient client, ILoginVisualizer vis, String callbackUri)
             {
                 Client = client;
                 Vis = vis;
@@ -100,10 +100,12 @@ namespace NemoKachi.TwitterWrapper
             {
                 var taskSource = new TaskCompletionSource<AccountToken>();
 
-                LoginCompletedEventHandler handler = null;
-                handler = delegate(Object sender, LoginCompletedEventArgs e)
+                LoginCompletedEventHandler completedHandler = null;
+                RoutedEventHandler closedHandler = null;
+                completedHandler = delegate(Object sender, LoginCompletedEventArgs e)
                 {
-                    LoginCompleted -= handler;
+                    LoginCompleted -= completedHandler;
+                    Vis.Closed -= closedHandler;
                     if (e.Succeed)
                         taskSource.SetResult(e.AuthedAccountToken);
                     else
@@ -113,28 +115,25 @@ namespace NemoKachi.TwitterWrapper
                         else
                             taskSource.SetException(e.InnerException);
                     }
-                    //switch (e.Message)
-                    //{
-                    //    case LoginMessage.Succeed:
-                    //        taskSource.SetResult(e);
-                    //        break;
-                    //    case LoginMessage.Failed:
-                    //        taskSource.SetException(new Exception("Failed"));
-                    //        break;
-                    //    case LoginMessage.UserDenied:
-                    //        taskSource.SetCanceled();
-                    //        break;
-                    //}
                 };
-                LoginCompleted += handler;
+                LoginCompleted += completedHandler;
 
-                LoginAsync();
+                closedHandler = delegate(Object sender, RoutedEventArgs e)
+                {
+                    LoginCompleted -= completedHandler;
+                    Vis.Closed -= closedHandler;
+                    taskSource.SetCanceled();
+                };
+                Vis.Closed += closedHandler;
+
+                LoginAsync(taskSource);
 
                 return taskSource.Task;
             }
 
-            public async void LoginAsync()
+            public async void LoginAsync(TaskCompletionSource<AccountToken> tcs)
             {
+                AccountToken Token = new AccountToken();
                 //"Recieving OAuth callback...";
                 Vis.Phase = LoginPhase.WaitingOAuthCallback;
                 using (HttpResponseMessage response = await Client.OAuthStream(
@@ -152,35 +151,43 @@ namespace NemoKachi.TwitterWrapper
                             //"Authorizing this app on your account...";
                             Vis.Phase = LoginPhase.AuthorizingApp;
                             WebView webView1 = Vis.SetWebView(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
-                            webView1.LoadCompleted += new Windows.UI.Xaml.Navigation.LoadCompletedEventHandler(
+                            Windows.UI.Xaml.Navigation.LoadCompletedEventHandler handler = null;
+                            handler = new Windows.UI.Xaml.Navigation.LoadCompletedEventHandler(
                                 async delegate(Object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
                                 {
-                                    if (String.Format("{0}://{1}{2}", e.Uri.Scheme, e.Uri.Host, e.Uri.AbsolutePath) == CallbackUri)
+                                    if (tcs.Task.Status == System.Threading.Tasks.TaskStatus.WaitingForActivation)
                                     {
-                                        //"Verifying your temporary twitter token...";
-                                        Vis.Phase = LoginPhase.VerifyingTempToken;
-                                        //ChildGrid.Children.Remove(webviewgrid);
-                                        Vis.RemoveWebView();
-                                        String webparam = e.Uri.Query;
+                                        if (String.Format("{0}://{1}{2}", e.Uri.Scheme, e.Uri.Host, e.Uri.AbsolutePath) == CallbackUri)
                                         {
-                                            Dictionary<String, String> dict = TwitterClient.HTTPQuery(webparam.Substring(1));
-                                            if (!dict.ContainsKey("denied"))
+                                            //"Verifying your temporary twitter token...";
+                                            Vis.Phase = LoginPhase.VerifyingTempToken;
+                                            Vis.RemoveWebView();
+                                            String webparam = e.Uri.Query;
                                             {
-                                                await webView1_LoadCompleted(TwitterClient.HTTPQuery(webparam.Substring(1)));
-                                                OnLoginCompleted(
-                                                    new LoginCompletedEventArgs()
-                                                    {
-                                                        AuthedAccountToken = Token,
-                                                        Succeed = true
-                                                    });
-                                            }
-                                            else
-                                            {
-                                                OnLoginCompleted(new LoginCompletedEventArgs() { Succeed = false });
+                                                Dictionary<String, String> dict = TwitterClient.HTTPQuery(webparam.Substring(1));
+                                                if (!dict.ContainsKey("denied"))
+                                                {
+                                                    await webView1_LoadCompleted(Token, dict);
+                                                    OnLoginCompleted(
+                                                        new LoginCompletedEventArgs()
+                                                        {
+                                                            AuthedAccountToken = Token,
+                                                            Succeed = true
+                                                        });
+                                                }
+                                                else
+                                                {
+                                                    OnLoginCompleted(new LoginCompletedEventArgs() { Succeed = false });
+                                                }
                                             }
                                         }
                                     }
+                                    else
+                                    {
+                                        webView1.LoadCompleted -= handler;
+                                    }
                                 });
+                            webView1.LoadCompleted += handler;
                             webView1.Navigate(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
                             Token.oauth_token_secret = loginparams["oauth_token_secret"];
                         }
@@ -196,7 +203,7 @@ namespace NemoKachi.TwitterWrapper
                 }
             }
 
-            public async Task webView1_LoadCompleted(Dictionary<String, String> webparams)
+            public async Task webView1_LoadCompleted(AccountToken Token, Dictionary<String, String> webparams)
             {
                 //"Accessing your twitter token...";
                 Vis.Phase = LoginPhase.AccessingToken;

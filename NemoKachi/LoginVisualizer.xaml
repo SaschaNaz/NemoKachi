@@ -16,6 +16,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Button Content="&#xE10A;" Style="{StaticResource IconButtonStyle}" FontSize="40" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="36,56,0,0" Click="Button_Click" />
         <ProgressRing HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="100" Height="100"  IsActive="True"  />
         <TextBlock Grid.Row="1" Margin="0,50,0,0" x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
       
