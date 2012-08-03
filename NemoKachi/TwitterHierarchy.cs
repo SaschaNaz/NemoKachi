@@ -38,6 +38,7 @@ namespace NemoKachi
             TweetList = new ObservableCollection<Tweet>();
         }
 
+        
         public void AttachTweet(Tweet twt)
         {
             DateTime publishedTime = twt.CreatedAt;
@@ -51,10 +52,20 @@ namespace NemoKachi
                 }
                 else if (itemTime == publishedTime)
                 {
-                    if (TweetList[i].Id != twt.Id)
+                    Boolean same = false;
+                    for (Int32 i2 = i + 1; i2 < TweetList.Count; i2++)
                     {
-                        TweetList.Insert(i, twt);
+                        if (TweetList[i].CreatedAt == publishedTime)
+                            if (TweetList[i].Id == twt.Id)
+                            {
+                                same = true;
+                                break;
+                            }
+                        else
+                            break;
                     }
+                    if (!same)
+                        TweetList.Insert(i, twt);
                     return;
                 }
             }
