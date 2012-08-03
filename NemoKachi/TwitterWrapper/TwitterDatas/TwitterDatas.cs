@@ -93,14 +93,14 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         //    get { return JsonData.Stringify(); }
         //}
 
-        public TwitterUser User { get; set; }
-        public Tweet RetweetedStatus { get; set; }
-        public Entities AttachedEntities { get; set; }
-        public String Text { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public UInt64 Id { get; set; }
-        public String Source { get; set; }
-        public Nullable<UInt64> ReplyId { get; set; }
+        public TwitterUser User { get; private set; }
+        public Tweet RetweetedStatus { get; private set; }
+        public Entities AttachedEntities { get; private set; }
+        public String Text { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public UInt64 Id { get; private set; }
+        public String Source { get; private set; }
+        public Nullable<UInt64> ReplyId { get; private set; }
 
         public Tweet(JsonObject jo)
         {
@@ -157,11 +157,9 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         //}
         public String GetClientName(String ParsedString)
         {
-            System.Xml.Linq.XElement xelm = null;
-            try { xelm = System.Xml.Linq.XElement.Parse(ParsedString); }
-            catch { }
-            if (xelm != null)
+            if (ParsedString[0] == '<')//The required conditon to check if it can be parsed.
             {
+                System.Xml.Linq.XElement xelm = System.Xml.Linq.XElement.Parse(ParsedString);
                 return xelm.Value + " : " + xelm.Attribute(System.Xml.Linq.XName.Get("href")).Value;
             }
             else
@@ -232,20 +230,20 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
                     Urls[i] = new Url(jary[i].GetObject());
                 }
 
-                Boolean IsMediaExist;
-                try { jary = jsob.GetNamedArray("media"); IsMediaExist = true; }
-                catch { IsMediaExist = false; }
-                if (IsMediaExist)
                 {
-                    Media = new TweetMedia[jary.Count];
-                    for (Int32 i = 0; i < Media.Length; i++)
+                    IJsonValue value;
+                    if (jsob.TryGetValue("media", out value))
                     {
-                        Media[i] = new TweetMedia(jary[i].GetObject());
+                        Media = new TweetMedia[value.GetArray().Count];
+                        for (Int32 i = 0; i < Media.Length; i++)
+                        {
+                            Media[i] = new TweetMedia(value.GetArray()[i].GetObject());
+                        }
                     }
-                }
-                else
-                {
-                    Media = null;
+                    else
+                    {
+                        Media = null;
+                    }
                 }
             }
         }

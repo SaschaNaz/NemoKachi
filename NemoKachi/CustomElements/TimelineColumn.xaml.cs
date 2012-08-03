@@ -36,6 +36,7 @@ namespace NemoKachi.CustomElements
                 TwitterWrapper.AccountToken aToken = collector.GetTokenByID(tlData.AccountID);
 
                 TwitterWrapper.TwitterDatas.Tweet[] tweets = await MainClient.RefreshAsync(aToken, tlData);
+                tlData.LoadedLastTweetID = tweets[0].Id;
                 for (Int32 i = tweets.Length - 1; i >= 0; i--)
                 {
                     (this.DataContext as ColumnData).AttachTweet(tweets[i]);

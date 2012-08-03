@@ -19,27 +19,18 @@ namespace NemoKachi.TwitterWrapper
     {
         public String oauth_token;
         public String oauth_token_secret;
+
+        public UInt64 AccountId;
         public String AccountName
         {
             get { return (String)GetValue(AccountNameProperty); }
             set { SetValue(AccountNameProperty, value); }
-        }
-        public UInt64 AccountId
-        {
-            get { return (UInt64)GetValue(AccountIdProperty); }
-            set { SetValue(AccountIdProperty, value); }
         }
         public Uri AccountImageUri
         {
             get { return (Uri)GetValue(AccountImageUriProperty); }
             set { SetValue(AccountImageUriProperty, value); }
         }
-
-        public static readonly DependencyProperty AccountIdProperty =
-            DependencyProperty.Register("AccountId",
-            typeof(UInt64),
-            typeof(AccountToken),
-            new PropertyMetadata(0ul));
 
         public static readonly DependencyProperty AccountNameProperty =
             DependencyProperty.Register("AccountName",
@@ -182,7 +173,9 @@ namespace NemoKachi.TwitterWrapper
             HttpResponseMessage response = await OAuthStream(
                 aToken, HttpMethod.Get,
                 tlData.RestURI.OriginalString, tlData.GetRequest(), null);
-            JsonArray jary = JsonArray.Parse(await ConvertStreamAsync(response.Content));
+            String str = await ConvertStreamAsync(response.Content);
+            System.Diagnostics.Debug.WriteLine(str);
+            JsonArray jary = JsonArray.Parse(str);
             foreach (JsonValue jo in jary)
             {
                 tweets.Add(new Tweet(jo.GetObject()));

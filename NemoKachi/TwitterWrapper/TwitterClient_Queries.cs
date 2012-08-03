@@ -343,6 +343,10 @@ namespace NemoKachi.TwitterWrapper
         Uri StreamURI { get; }
         UInt64 AccountID { get; set; }
         TwitterRequest GetRequest();
+        /// <summary>
+        /// 마지막으로 불러들인 트윗 ID를 기억
+        /// </summary>
+        Nullable<UInt64> LoadedLastTweetID { get; set; }
     }
 
     public class FollowingTweetsData : ITimelineData
@@ -357,6 +361,7 @@ namespace NemoKachi.TwitterWrapper
         }
         public UInt64 AccountID { get; set; }
         public LocalRefreshRequest RestOption { get; private set; }
+        public Nullable<UInt64> LoadedLastTweetID { get; set; }
 
         public FollowingTweetsData(UInt64 accountID, LocalRefreshRequest restOption)
         {
@@ -366,6 +371,7 @@ namespace NemoKachi.TwitterWrapper
 
         public TwitterRequest GetRequest()
         {
+            RestOption.since_id = LoadedLastTweetID;
             return RestOption;
         }
     }
@@ -382,6 +388,7 @@ namespace NemoKachi.TwitterWrapper
         }
         public UInt64 AccountID { get; set; }
         public LocalRefreshRequest RestOption { get; private set; }
+        public Nullable<UInt64> LoadedLastTweetID { get; set; }
 
         public MentionTweetsData(UInt64 accountID, LocalRefreshRequest restOption)
         {
@@ -391,6 +398,7 @@ namespace NemoKachi.TwitterWrapper
 
         public TwitterRequest GetRequest()
         {
+            RestOption.since_id = LoadedLastTweetID;
             return RestOption;
         }
     }
@@ -407,6 +415,7 @@ namespace NemoKachi.TwitterWrapper
         }
         public UInt64 AccountID { get; set; }
         public SpecificUserRefreshRequest RestOption { get; private set; }
+        public Nullable<UInt64> LoadedLastTweetID { get; set; }
 
         public SpecificUserTweetsData(UInt64 accountID, SpecificUserRefreshRequest restOption)
         {
@@ -416,6 +425,7 @@ namespace NemoKachi.TwitterWrapper
 
         public TwitterRequest GetRequest()
         {
+            RestOption.since_id = LoadedLastTweetID;
             return RestOption;
         }
     }
