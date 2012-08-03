@@ -29,11 +29,36 @@ namespace NemoKachi
         public ColumnData()
         {
             TimelineDatas = new ObservableCollection<ITimelineData>();
+            TweetList = new ObservableCollection<Tweet>();
         }
         
         public ColumnData(params ITimelineData[] tlDatas)
         {
             TimelineDatas = new ObservableCollection<ITimelineData>(tlDatas);
+            TweetList = new ObservableCollection<Tweet>();
+        }
+
+        public void AttachTweet(Tweet twt)
+        {
+            DateTime publishedTime = twt.CreatedAt;
+            for (Int32 i = 0; i < TweetList.Count; i++)
+            {
+                DateTime itemTime = TweetList[i].CreatedAt;
+                if (itemTime < publishedTime)
+                {
+                    TweetList.Insert(i, twt);
+                    return;
+                }
+                else if (itemTime == publishedTime)
+                {
+                    if (TweetList[i].Id != twt.Id)
+                    {
+                        TweetList.Insert(i, twt);
+                    }
+                    return;
+                }
+            }
+            TweetList.Insert(TweetList.Count, twt);
         }
     }
 }

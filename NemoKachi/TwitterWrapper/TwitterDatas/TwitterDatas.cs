@@ -26,111 +26,139 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
     //    }
     //}
 
-    public struct DeleteEvent
+    //public struct DeleteEvent
+    //{
+    //    public readonly UInt64 UserId;//이거갖고 팔로우 리스트에서 찾으면 쓸모가 있을듯. 팔로우에 없는 것들이야 뭐...몰라
+    //    public readonly UInt64 StatusId;
+    //    public DeleteEvent(JsonObject jsob)
+    //    {
+    //        UserId = Convert.ToUInt64(jsob.GetNamedString("user_id_str"));
+    //        StatusId = Convert.ToUInt64(jsob.GetNamedString("id_str"));
+    //    }
+    //}
+
+    //public struct FavoriteEvent
+    //{
+    //    public enum EventType
+    //    {
+    //        Favorited, Unfavorited
+    //    }
+    //    public readonly EventType Type;
+    //    public readonly TwitterUser OfUser;
+    //    public readonly String Status;
+    //    public readonly TwitterUser FromUser;
+    //    public readonly DateTime EventCreated;
+    //    public FavoriteEvent(JsonObject jsob, EventType type)
+    //    {
+    //        Type = type;
+    //        FromUser = new TwitterUser(jsob.GetNamedObject("source"));
+    //        Tweet twt = new Tweet(jsob.GetNamedObject("target_object"));
+    //        OfUser = twt.GetUser();
+    //        Status = twt.GetText();
+    //        EventCreated = TwitterClient.ConvertToDateTime(jsob.GetNamedString("created_at"));
+    //    }//이거 다 만들고 AddStreamedData에 집어넣기. 으앙
+    //}
+
+    //public struct UserEvent
+    //{
+    //    public enum EventType
+    //    {
+    //        Follow, Block
+    //    }
+    //    public readonly EventType Type;
+    //    public readonly TwitterUser TargetUser;
+    //    public readonly TwitterUser FromUser;
+    //    public readonly DateTime EventCreated;
+    //    public UserEvent(JsonObject jsob, EventType type)
+    //    {
+    //        Type = type;
+    //        TargetUser = new TwitterUser(jsob.GetNamedObject("target"));
+    //        FromUser = new TwitterUser(jsob.GetNamedObject("source"));
+    //        EventCreated = TwitterClient.ConvertToDateTime(jsob.GetNamedString("created_at"));
+    //    }
+    //}
+
+    //public struct TextEvent
+    //{
+    //    public String Title;
+    //    public String Content;
+    //    public Windows.UI.Color TextColor;
+    //}
+
+    public class Tweet// : ITimeAttached
     {
-        public readonly UInt64 UserId;//이거갖고 팔로우 리스트에서 찾으면 쓸모가 있을듯. 팔로우에 없는 것들이야 뭐...몰라
-        public readonly UInt64 StatusId;
-        public DeleteEvent(JsonObject jsob)
-        {
-            UserId = Convert.ToUInt64(jsob.GetNamedString("user_id_str"));
-            StatusId = Convert.ToUInt64(jsob.GetNamedString("id_str"));
-        }
-    }
+        //readonly JsonObject JsonData;
+        //public String JsonMessage
+        //{
+        //    get { return JsonData.Stringify(); }
+        //}
 
-    public struct FavoriteEvent
-    {
-        public enum EventType
-        {
-            Favorited, Unfavorited
-        }
-        public readonly EventType Type;
-        public readonly TwitterUser OfUser;
-        public readonly String Status;
-        public readonly TwitterUser FromUser;
-        public readonly DateTime EventCreated;
-        public FavoriteEvent(JsonObject jsob, EventType type)
-        {
-            Type = type;
-            FromUser = new TwitterUser(jsob.GetNamedObject("source"));
-            Tweet twt = new Tweet(jsob.GetNamedObject("target_object"));
-            OfUser = twt.GetUser();
-            Status = twt.GetText();
-            EventCreated = TwitterClient.ConvertToDateTime(jsob.GetNamedString("created_at"));
-        }//이거 다 만들고 AddStreamedData에 집어넣기. 으앙
-    }
+        public TwitterUser User { get; set; }
+        public Tweet RetweetedStatus { get; set; }
+        public Entities AttachedEntities { get; set; }
+        public String Text { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public UInt64 Id { get; set; }
+        public String Source { get; set; }
+        public Nullable<UInt64> ReplyId { get; set; }
 
-    public struct UserEvent
-    {
-        public enum EventType
+        public Tweet(JsonObject jo)
         {
-            Follow, Block
-        }
-        public readonly EventType Type;
-        public readonly TwitterUser TargetUser;
-        public readonly TwitterUser FromUser;
-        public readonly DateTime EventCreated;
-        public UserEvent(JsonObject jsob, EventType type)
-        {
-            Type = type;
-            TargetUser = new TwitterUser(jsob.GetNamedObject("target"));
-            FromUser = new TwitterUser(jsob.GetNamedObject("source"));
-            EventCreated = TwitterClient.ConvertToDateTime(jsob.GetNamedString("created_at"));
-        }
-    }
-
-    public struct TextEvent
-    {
-        public String Title;
-        public String Content;
-        public Windows.UI.Color TextColor;
-    }
-
-    public class Tweet : ITimeAttached
-    {
-        readonly JsonObject JsonData;
-        public String JsonMessage
-        {
-            get { return JsonData.Stringify(); }
+            User = new TwitterUser(jo.GetNamedObject("user"));
+            {
+                IJsonValue value;
+                if (jo.TryGetValue("retweeted_status", out value))
+                {
+                    RetweetedStatus = new Tweet(value.GetObject());
+                }
+            }
+            AttachedEntities = new Entities(jo.GetNamedObject("entities"));
+            Text = Uri.UnescapeDataString(jo.GetNamedString("text"));
+            CreatedAt = TwitterClient.ConvertToDateTime(jo.GetNamedString("created_at"));
+            Id = Convert.ToUInt64(jo.GetNamedString("id_str"));
+            Source = GetClientName(jo.GetNamedString("source"));
+            {
+                IJsonValue value;
+                if (jo.TryGetValue("in_reply_to_user_id_str", out value) && value.ValueType == JsonValueType.String)
+                {
+                    ReplyId = GetReplyId(value.GetString());
+                }
+            }
         }
 
-        public Tweet(JsonObject jsob)
-        {
-            JsonData = jsob;
-        }
+        //public TwitterUser GetUser()
+        //{
+        //    return new TwitterUser(JsonData.GetNamedObject("user"));
+        //}
 
-        public TwitterUser GetUser()
-        {
-            return new TwitterUser(JsonData.GetNamedObject("user"));
-        }
+        //public Tweet GetRetweetedTweet()
+        //{
+        //    try { return new Tweet(JsonData.GetNamedObject("retweeted_status")); }
+        //    catch { return null; }
+        //}
 
-        public Tweet GetRetweetedTweet()
-        {
-            try { return new Tweet(JsonData.GetNamedObject("retweeted_status")); }
-            catch { return null; }
-        }
+        //public Entities GetEntities()
+        //{
+        //    return new Entities(JsonData.GetNamedObject("entities"));
+        //}
 
-        public Entities GetEntities()
-        {
-            return new Entities(JsonData.GetNamedObject("entities"));
-        }
+        //public String GetText()
+        //{
+        //    return Uri.UnescapeDataString(JsonData.GetNamedString("text"));
+        //}
 
-        public String GetText()
-        {
-            return Uri.UnescapeDataString(JsonData.GetNamedString("text"));
-        }
-
-        public DateTime GetPublishedTime()
-        {
-            return TwitterClient.ConvertToDateTime(JsonData.GetNamedString("created_at"));
-        }
-        public UInt64 GetId()
-        {
-            return Convert.ToUInt64(JsonData.GetNamedString("id_str"));
-        }
-        public String GetClientName()
+        //public DateTime GetPublishedTime()
+        //{
+        //    return TwitterClient.ConvertToDateTime(JsonData.GetNamedString("created_at"));
+        //}
+        //public UInt64 GetId()
+        //{
+        //    return Convert.ToUInt64(JsonData.GetNamedString("id_str"));
+        //}
+        public String GetClientName(String ParsedString)
         {
             System.Xml.Linq.XElement xelm = null;
-            try { xelm = System.Xml.Linq.XElement.Parse(JsonData.GetNamedString("source")); }
+            try { xelm = System.Xml.Linq.XElement.Parse(ParsedString); }
             catch { }
             if (xelm != null)
             {
@@ -138,43 +166,43 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
             }
             else
             {
-                return JsonData.GetNamedString("source");
+                return ParsedString;
             }
         }
-        public Nullable<UInt64> GetReplyId()
+        public Nullable<UInt64> GetReplyId(String ParsedString)
         {
-            try { return Convert.ToUInt64(JsonData.GetNamedString("in_reply_to_user_id_str")); }
+            try { return Convert.ToUInt64(ParsedString); }
             catch { return null; }
         }
 
-        static UIElement embeddedMedia(Uri uri)
-        {
-            switch (uri.Host)
-            {
-                case "yfrog.com":
-                    {
-                        return new TextBlock() { Text = "yfrog image" };
-                    }
-                case "twitpic.com":
-                    {
-                        return new TextBlock() { Text = "twitpic image" };
-                    }
-                case "lockerz.com":
-                    {
-                        return new TextBlock() { Text = "lockerz image" };
-                    }
-                case "youtube.com":
-                    {
-                        return new TextBlock() { Text = "youtube video" };
-                    }
-                //case "twitter.com":
-                //    {
-                //        uri.
-                //    }
-                //twitter.com? 아, 여기서 twitter.com이면 그냥 트윗 링크고 미디어 링크는 다른 패러미터로 온다
-                default: return null;
-            }
-        }
+        //static UIElement embeddedMedia(Uri uri)
+        //{
+        //    switch (uri.Host)
+        //    {
+        //        case "yfrog.com":
+        //            {
+        //                return new TextBlock() { Text = "yfrog image" };
+        //            }
+        //        case "twitpic.com":
+        //            {
+        //                return new TextBlock() { Text = "twitpic image" };
+        //            }
+        //        case "lockerz.com":
+        //            {
+        //                return new TextBlock() { Text = "lockerz image" };
+        //            }
+        //        case "youtube.com":
+        //            {
+        //                return new TextBlock() { Text = "youtube video" };
+        //            }
+        //        //case "twitter.com":
+        //        //    {
+        //        //        uri.
+        //        //    }
+        //        //twitter.com? 아, 여기서 twitter.com이면 그냥 트윗 링크고 미디어 링크는 다른 패러미터로 온다
+        //        default: return null;
+        //    }
+        //}
 
         public struct Entities //https://dev.twitter.com/docs/tweet-entities
         {
