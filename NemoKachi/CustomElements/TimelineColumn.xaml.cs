@@ -30,6 +30,7 @@ namespace NemoKachi.CustomElements
         {
             AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
             TwitterWrapper.TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient;
+            TweetHouse house = Application.Current.Resources["TweetHouse"] as TweetHouse;
 
             Parallel.ForEach((this.DataContext as ColumnData).TimelineDatas, async delegate(TwitterWrapper.ITimelineData tlData)
             {
@@ -37,10 +38,8 @@ namespace NemoKachi.CustomElements
 
                 TwitterWrapper.TwitterDatas.Tweet[] tweets = await MainClient.RefreshAsync(aToken, tlData);
                 tlData.LoadedLastTweetID = tweets[0].Id;
-                for (Int32 i = tweets.Length - 1; i >= 0; i--)
-                {
-                    (this.DataContext as ColumnData).AttachTweet(tweets[i]);
-                }
+                house.AttachTweets(tweets);
+                (this.DataContext as ColumnData).AttachTweets(tweets);
             });
         }
     }

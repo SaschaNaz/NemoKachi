@@ -140,7 +140,7 @@ namespace NemoKachi.TwitterWrapper
                     Token,
                     HttpMethod.Post,
                     "https://api.twitter.com/oauth/request_token",
-                    TwitterRequest.MakeRequest(), CallbackUri))
+                    new TwitterRequest(), CallbackUri))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -211,7 +211,7 @@ namespace NemoKachi.TwitterWrapper
                 {
                     Token.oauth_token = webparams["oauth_token"];
                     using (HttpResponseMessage response = await Client.OAuthStream(Token, HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
-                        TwitterRequest.MakeRequest(new TwitterRequest.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterRequest.RequestType.Post)), null))
+                        new TwitterRequest(new TwitterRequest.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterRequest.RequestType.Post)), null))
                     {
 
                         if (response.StatusCode == System.Net.HttpStatusCode.OK)
