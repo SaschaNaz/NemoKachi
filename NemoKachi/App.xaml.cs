@@ -56,6 +56,10 @@ namespace NemoKachi
                     "HeOeHqoUvfzrcRNUM90iPw",
                     "nNNdPQEhAbu986vIKnqRfjScwfZzvhVovSUT5iWhavA",
                     new System.Net.Http.Headers.ProductInfoHeaderValue("NemoKachi", "Alpha-RP")));
+            TweetHouse house = new TweetHouse(new TimeSpan(0, 10, 0));
+            house.ManageStart();
+            Application.Current.Resources.Add(
+                "TweetHouse", house);
 
             // Create a Frame to act navigation context and navigate to the first page
             var rootFrame = new Frame();

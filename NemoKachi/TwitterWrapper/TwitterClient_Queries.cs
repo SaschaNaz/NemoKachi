@@ -97,7 +97,7 @@ namespace NemoKachi.TwitterWrapper
     //if문으로 문자열에 더하고 더하고 하는것도 좋지만 지금 하는것처럼 리스트에 넣고 한방에 Join 돌리는 것이 더 괜찮을 듯하다.
     //GetQueryString의 경우 쿼리가 두 부분으로 나뉘므로 주의
 
-    public struct TwitterRequest
+    public class TwitterRequest
     {
         public enum RequestType
         {
@@ -116,43 +116,63 @@ namespace NemoKachi.TwitterWrapper
             }
         }
         //normal queries
-        KeyValuePair<String, String>[] Query1;
-        KeyValuePair<String, String>[] Query2;
-        KeyValuePair<String, String>[] PostQuery;
+        SortedDictionary<String, String> Query1;
+        SortedDictionary<String, String> Query2;
+        SortedDictionary<String, String> PostQuery;
 
         //posts
 
-        public static TwitterRequest MakeRequest(params QueryKeyValue[] keyvalues)
+        public TwitterRequest(params QueryKeyValue[] keyvalues)
         {
-            TwitterRequest nquery = new TwitterRequest();
-            SortedDictionary<String, String> query1 = new SortedDictionary<String, String>();
-            SortedDictionary<String, String> query2 = new SortedDictionary<String, String>();
-            SortedDictionary<String, String> postquery = new SortedDictionary<String, String>();
+            Query1 = new SortedDictionary<String, String>();
+            Query2 = new SortedDictionary<String, String>();
+            PostQuery = new SortedDictionary<String, String>();
             foreach (QueryKeyValue qkv in keyvalues)
             {
                 switch (qkv.Type)
                 {
                     case RequestType.Type1:
                         {
-                            query1.Add(qkv.Key, qkv.Value.ToString());
+                            Query1.Add(qkv.Key, qkv.Value.ToString());
                             break;
                         }
                     case RequestType.Type2:
                         {
-                            query2.Add(qkv.Key, qkv.Value.ToString());
+                            Query2.Add(qkv.Key, qkv.Value.ToString());
                             break;
                         }
                     case RequestType.Post:
                         {
-                            postquery.Add(qkv.Key, qkv.Value.ToString());
+                            PostQuery.Add(qkv.Key, qkv.Value.ToString());
                             break;
                         }
                 }
             }
-            nquery.Query1 = query1.ToArray();
-            nquery.Query2 = query2.ToArray();
-            nquery.PostQuery = postquery.ToArray();
-            return nquery;
+        }
+
+        public void AddValues(params QueryKeyValue[] keyvalues)
+        {
+            foreach (QueryKeyValue qkv in keyvalues)
+            {
+                switch (qkv.Type)
+                {
+                    case RequestType.Type1:
+                        {
+                            Query1.Add(qkv.Key, qkv.Value.ToString());
+                            break;
+                        }
+                    case RequestType.Type2:
+                        {
+                            Query2.Add(qkv.Key, qkv.Value.ToString());
+                            break;
+                        }
+                    case RequestType.Post:
+                        {
+                            PostQuery.Add(qkv.Key, qkv.Value.ToString());
+                            break;
+                        }
+                }
+            }
         }
 
         public String GetQueryStringPart1()
@@ -242,7 +262,7 @@ namespace NemoKachi.TwitterWrapper
                            TwitterRequest.RequestType.Post));
             }
 
-            return TwitterRequest.MakeRequest(paramList.ToArray());
+            return new TwitterRequest(paramList.ToArray());
         }
     }
 
@@ -283,7 +303,7 @@ namespace NemoKachi.TwitterWrapper
                            TwitterRequest.RequestType.Type2));
             }
 
-            return TwitterRequest.MakeRequest(paramList.ToArray());
+            return new TwitterRequest(paramList.ToArray());
         }
     }
 
@@ -333,7 +353,7 @@ namespace NemoKachi.TwitterWrapper
                            TwitterRequest.RequestType.Type2));
             }
 
-            return TwitterRequest.MakeRequest(paramList.ToArray());
+            return new TwitterRequest(paramList.ToArray());
         }
     }
 
@@ -361,7 +381,11 @@ namespace NemoKachi.TwitterWrapper
         }
         public UInt64 AccountID { get; set; }
         public LocalRefreshRequest RestOption { get; private set; }
-        public Nullable<UInt64> LoadedLastTweetID { get; set; }
+        public Nullable<UInt64> LoadedLastTweetID
+        {
+            get { return RestOption.since_id; }
+            set { RestOption.since_id = value; }
+        }
 
         public FollowingTweetsData(UInt64 accountID, LocalRefreshRequest restOption)
         {
@@ -371,7 +395,6 @@ namespace NemoKachi.TwitterWrapper
 
         public TwitterRequest GetRequest()
         {
-            RestOption.since_id = LoadedLastTweetID;
             return RestOption;
         }
     }
@@ -388,7 +411,11 @@ namespace NemoKachi.TwitterWrapper
         }
         public UInt64 AccountID { get; set; }
         public LocalRefreshRequest RestOption { get; private set; }
-        public Nullable<UInt64> LoadedLastTweetID { get; set; }
+        public Nullable<UInt64> LoadedLastTweetID
+        {
+            get { return RestOption.since_id; }
+            set { RestOption.since_id = value; }
+        }
 
         public MentionTweetsData(UInt64 accountID, LocalRefreshRequest restOption)
         {
@@ -398,7 +425,6 @@ namespace NemoKachi.TwitterWrapper
 
         public TwitterRequest GetRequest()
         {
-            RestOption.since_id = LoadedLastTweetID;
             return RestOption;
         }
     }
@@ -415,7 +441,11 @@ namespace NemoKachi.TwitterWrapper
         }
         public UInt64 AccountID { get; set; }
         public SpecificUserRefreshRequest RestOption { get; private set; }
-        public Nullable<UInt64> LoadedLastTweetID { get; set; }
+        public Nullable<UInt64> LoadedLastTweetID
+        {
+            get { return RestOption.since_id; }
+            set { RestOption.since_id = value; }
+        }
 
         public SpecificUserTweetsData(UInt64 accountID, SpecificUserRefreshRequest restOption)
         {
@@ -425,7 +455,6 @@ namespace NemoKachi.TwitterWrapper
 
         public TwitterRequest GetRequest()
         {
-            RestOption.since_id = LoadedLastTweetID;
             return RestOption;
         }
     }

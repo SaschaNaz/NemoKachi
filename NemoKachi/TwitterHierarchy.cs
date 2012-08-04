@@ -38,8 +38,16 @@ namespace NemoKachi
             TweetList = new ObservableCollection<Tweet>();
         }
 
-        
-        public void AttachTweet(Tweet twt)
+
+        public void AttachTweets(params Tweet[] twts)
+        {
+            for (Int32 i = twts.Length - 1; i >= 0; i--)
+            {
+                AttachTweet(twts[i]);
+            }
+        }
+
+        void AttachTweet(Tweet twt)
         {
             DateTime publishedTime = twt.CreatedAt;
             for (Int32 i = 0; i < TweetList.Count; i++)
@@ -53,23 +61,32 @@ namespace NemoKachi
                 else if (itemTime == publishedTime)
                 {
                     Boolean same = false;
-                    for (Int32 i2 = i + 1; i2 < TweetList.Count; i2++)
+                    if (TweetList[i].Id == twt.Id)
                     {
-                        if (TweetList[i].CreatedAt == publishedTime)
-                            if (TweetList[i].Id == twt.Id)
+                        same = true;
+                    }
+                    else
+                    {
+                        for (Int32 i2 = i + 1; i2 < TweetList.Count; i2++)
+                        {
+                            if (TweetList[i2].CreatedAt == publishedTime)
                             {
-                                same = true;
-                                break;
+                                if (TweetList[i2].Id == twt.Id)
+                                {
+                                    same = true;
+                                    break;
+                                }
                             }
-                        else
-                            break;
+                            else
+                                break;
+                        }
                     }
                     if (!same)
                         TweetList.Insert(i, twt);
                     return;
                 }
             }
-            TweetList.Insert(TweetList.Count, twt);
+            TweetList.Add(twt);
         }
     }
 }

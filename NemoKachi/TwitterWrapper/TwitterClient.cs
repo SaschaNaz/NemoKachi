@@ -152,7 +152,7 @@ namespace NemoKachi.TwitterWrapper
             return await OAuthStream(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", id),
-                TwitterRequest.MakeRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
+                new TwitterRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
         }
 
         public async Task<HttpResponseMessage> Destroy(AccountToken aToken, UInt64 id)
@@ -160,14 +160,14 @@ namespace NemoKachi.TwitterWrapper
             return await OAuthStream(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", id),
-                TwitterRequest.MakeRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
+                new TwitterRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
         }
 
         /// <summary>
         /// 타임라인을 리프레시합니다.
         /// </summary>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다. 리프레시된 트윗들이 컨텐트로 포함됩니다.</returns>
-        public async Task<Tweet[]> RefreshAsync(AccountToken aToken, ITimelineData tlData)
+        public async Task<Tweet[]> RefreshAsync(AccountToken aToken, TwitterWrapper.ITimelineData tlData)
         {
             List<Tweet> tweets = new List<Tweet>();
             HttpResponseMessage response = await OAuthStream(
@@ -195,7 +195,7 @@ namespace NemoKachi.TwitterWrapper
             return await OAuthStream(
                 aToken, HttpMethod.Get,
                 "https://api.twitter.com/1/users/show.json",
-                TwitterRequest.MakeRequest(
+                new TwitterRequest(
                     new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
                     new TwitterRequest.QueryKeyValue("user_id", Id.ToString(), TwitterRequest.RequestType.Type2)), null);//new RefreshQuery() { include_entities = true, include_rts = true }
         }
@@ -205,7 +205,7 @@ namespace NemoKachi.TwitterWrapper
             return await NonAuthStream(
                 HttpMethod.Get,
                 "https://api.twitter.com/1/users/profile_image",
-                TwitterRequest.MakeRequest(
+                new TwitterRequest(
                     new TwitterRequest.QueryKeyValue("screen_name", ScreenName, TwitterRequest.RequestType.Type2),
                     new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)));//new RefreshQuery() { include_entities = true, include_rts = true }
         }
