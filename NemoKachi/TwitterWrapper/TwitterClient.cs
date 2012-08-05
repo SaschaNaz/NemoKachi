@@ -141,15 +141,15 @@ namespace NemoKachi.TwitterWrapper
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다</returns>
         public async Task<Tweet> SendTweetAsync(AccountToken aToken, SendTweetRequest tweetQuery)
         {
-            HttpResponseMessage response = await OAuthStream(
+            HttpResponseMessage response = await OAuthAsync(
                 aToken, HttpMethod.Post,
                 "https://api.twitter.com/1/statuses/update.json", tweetQuery, null);
-            return new Tweet(JsonObject.Parse(await ConvertStreamAsync(response.Content)));
+            return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
         }
 
         public async Task<HttpResponseMessage> SendRetweet(AccountToken aToken, UInt64 id)
         {
-            return await OAuthStream(
+            return await OAuthAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", id),
                 new TwitterRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
@@ -157,7 +157,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<HttpResponseMessage> Destroy(AccountToken aToken, UInt64 id)
         {
-            return await OAuthStream(
+            return await OAuthAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", id),
                 new TwitterRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
@@ -170,10 +170,10 @@ namespace NemoKachi.TwitterWrapper
         public async Task<Tweet[]> RefreshAsync(AccountToken aToken, TwitterWrapper.ITimelineData tlData)
         {
             List<Tweet> tweets = new List<Tweet>();
-            HttpResponseMessage response = await OAuthStream(
+            HttpResponseMessage response = await OAuthAsync(
                 aToken, HttpMethod.Get,
                 tlData.RestURI.OriginalString, tlData.GetRequest(), null);
-            String str = await ConvertStreamAsync(response.Content);
+            String str = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Debug.WriteLine(str);
             JsonArray jary = JsonArray.Parse(str);
             foreach (JsonValue jo in jary)
@@ -192,7 +192,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<HttpResponseMessage> GetUserInformation(AccountToken aToken, UInt64 Id)
         {
-            return await OAuthStream(
+            return await OAuthAsync(
                 aToken, HttpMethod.Get,
                 "https://api.twitter.com/1/users/show.json",
                 new TwitterRequest(
@@ -410,35 +410,35 @@ namespace NemoKachi.TwitterWrapper
         //    }
         //}
 
-        public static async Task<String> ConvertStreamAsync(HttpContent content)
-        {
-            List<Char> list = new List<Char>();
-            await Task.Run(async delegate
-            {
-                while (list.Count != content.Headers.ContentLength)
-                {
-                    Byte[] buffer = new Byte[1000];
-                    await (await content.ReadAsStreamAsync()).ReadAsync(buffer, 0, 1000);
-                    foreach (Byte b in buffer)
-                    {
-                        Char ch = Convert.ToChar(b);
-                        switch (ch)
-                        {
-                            case '\0':
-                                {
-                                    break;
-                                }
-                            default:
-                                {
-                                    list.Add(ch);
-                                    break;
-                                }
-                        }
-                    }
-                }
-            });
-            return new String(list.ToArray());
-        }
+        //public static async Task<String> ConvertStreamAsync(HttpContent content)
+        //{
+        //    List<Char> list = new List<Char>();
+        //    await Task.Run(async delegate
+        //    {
+        //        while (list.Count != content.Headers.ContentLength)
+        //        {
+        //            Byte[] buffer = new Byte[1000];
+        //            await (await content.ReadAsStreamAsync()).ReadAsync(buffer, 0, 1000);
+        //            foreach (Byte b in buffer)
+        //            {
+        //                Char ch = Convert.ToChar(b);
+        //                switch (ch)
+        //                {
+        //                    case '\0':
+        //                        {
+        //                            break;
+        //                        }
+        //                    default:
+        //                        {
+        //                            list.Add(ch);
+        //                            break;
+        //                        }
+        //                }
+        //            }
+        //        }
+        //    });
+        //    return new String(list.ToArray());
+        //}
 
         public class NoStreamerException : Exception
         {
@@ -547,7 +547,7 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<HttpResponseMessage> OAuthStream(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, String callbackUri)
+        public async Task<HttpResponseMessage> OAuthAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, String callbackUri)
         {
             const String oauth_version = "1.0";
             const String oauth_signature_method = "HMAC-SHA1";
@@ -653,7 +653,7 @@ namespace NemoKachi.TwitterWrapper
             httpRequestMessage.Headers.UserAgent.Add(UserAgent);
             using (HttpClient httpClientTemp = new HttpClient())//{ Timeout = new TimeSpan(0, 0, 10) }
             {
-                return await httpClientTemp.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+                return await httpClientTemp.SendAsync(httpRequestMessage);
             }
         }
 
