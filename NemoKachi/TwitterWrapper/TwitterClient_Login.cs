@@ -136,7 +136,7 @@ namespace NemoKachi.TwitterWrapper
                 AccountToken Token = new AccountToken();
                 //"Recieving OAuth callback...";
                 Vis.Phase = LoginPhase.WaitingOAuthCallback;
-                using (HttpResponseMessage response = await Client.OAuthStream(
+                using (HttpResponseMessage response = await Client.OAuthAsync(
                     Token,
                     HttpMethod.Post,
                     "https://api.twitter.com/oauth/request_token",
@@ -144,7 +144,7 @@ namespace NemoKachi.TwitterWrapper
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        Dictionary<String, String> loginparams = TwitterClient.HTTPQuery(await TwitterClient.ConvertStreamAsync(response.Content));
+                        Dictionary<String, String> loginparams = TwitterClient.HTTPQuery(await response.Content.ReadAsStringAsync());
 
                         if (loginparams["oauth_callback_confirmed"] == "true")
                         {
@@ -210,7 +210,7 @@ namespace NemoKachi.TwitterWrapper
                 try
                 {
                     Token.oauth_token = webparams["oauth_token"];
-                    using (HttpResponseMessage response = await Client.OAuthStream(Token, HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
+                    using (HttpResponseMessage response = await Client.OAuthAsync(Token, HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
                         new TwitterRequest(new TwitterRequest.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterRequest.RequestType.Post)), null))
                     {
 
@@ -218,7 +218,7 @@ namespace NemoKachi.TwitterWrapper
                         {
                             //"Loading your account information...";
                             Vis.Phase = LoginPhase.LoadingAccountInformation;
-                            Dictionary<String, String> loginparams = TwitterClient.HTTPQuery((await ConvertStreamAsync(response.Content)));
+                            Dictionary<String, String> loginparams = TwitterClient.HTTPQuery(await response.Content.ReadAsStringAsync());
 
                             Token.oauth_token = loginparams["oauth_token"];
                             Token.oauth_token_secret = loginparams["oauth_token_secret"];

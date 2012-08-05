@@ -59,7 +59,7 @@ namespace NemoKachi
                 else
                     return false;
             }).Stored;
-            //찾지 못했을 때 클라이언트를 이용해 새로 받아오는 코드
+            //찾지 못했을 때 클라이언트를 이용해 새로 받아오는 코드 추가
         }
 
         public Boolean IsManaging
