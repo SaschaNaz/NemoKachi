@@ -24,10 +24,12 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Text}" FontSize="18" TextWrapping="Wrap"/>
                         <TextBlock Grid.Row="1" Text="{Binding CreatedAt}" FontSize="12" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="2" Text="{Binding Id}" FontSize="12" TextWrapping="Wrap"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

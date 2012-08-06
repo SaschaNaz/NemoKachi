@@ -30,7 +30,7 @@ namespace NemoKachi.CustomElements
         {
             AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
             TwitterWrapper.TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient;
-            TweetHouse house = Application.Current.Resources["TweetHouse"] as TweetHouse;
+            TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
 
             Parallel.ForEach((this.DataContext as ColumnData).TimelineDatas, async delegate(TwitterWrapper.ITimelineData tlData)
             {

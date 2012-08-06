@@ -101,7 +101,18 @@ namespace NemoKachi.TwitterWrapper
     {
         public enum RequestType
         {
-            Type1, Type2, Post
+            /// <summary>
+            /// Takes place in front of the OAuth string.
+            /// </summary>
+            Type1,
+            /// <summary>
+            /// Takes place in rear of the OAuth string.
+            /// </summary>
+            Type2,
+            /// <summary>
+            /// The post query of the OAuth string.
+            /// </summary>
+            Post
         }
         public struct QueryKeyValue
         {
@@ -227,16 +238,32 @@ namespace NemoKachi.TwitterWrapper
 
     public class SendTweetRequest
     {
-        //normal queries
-        public Boolean include_entities = true;
+        //queries type 1
+        public Boolean display_coordinates = true;
         public Nullable<UInt64> in_reply_to_status_id;
+        public Boolean include_entities = true;
+        public Nullable<UInt64> lattitude;
+        public Nullable<UInt64> longitude;
 
         //posts
+        public String place_id;
         public String status;
+
+        //queries type 2
+        public Boolean trim_user;
 
         public static implicit operator TwitterRequest(SendTweetRequest r)
         {
             List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            #region querys type 1
+            if (r.display_coordinates)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "display_coordinates",
+                           "true",
+                           TwitterRequest.RequestType.Type1));
+            }
             if (r.in_reply_to_status_id != null)
             {
                 paramList.Add(
@@ -253,6 +280,32 @@ namespace NemoKachi.TwitterWrapper
                            "true",
                            TwitterRequest.RequestType.Type1));
             }
+            if (r.lattitude != null)
+            {
+                paramList.Add(
+                    new TwitterRequest.QueryKeyValue(
+                        "lat",
+                        r.lattitude.Value.ToString(),
+                        TwitterRequest.RequestType.Type1));
+            }
+            if (r.longitude != null)
+            {
+                paramList.Add(
+                    new TwitterRequest.QueryKeyValue(
+                        "long",
+                        r.longitude.Value.ToString(),
+                        TwitterRequest.RequestType.Type1));
+            }
+            #endregion
+            #region posts
+            if (r.place_id != null)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "place_id",
+                           r.place_id,
+                           TwitterRequest.RequestType.Post));
+            }
             if (r.status != null)
             {
                 paramList.Add(
@@ -261,8 +314,102 @@ namespace NemoKachi.TwitterWrapper
                            TwitterClient.AdditionalEscape(Uri.EscapeDataString(r.status)),
                            TwitterRequest.RequestType.Post));
             }
+            #endregion
+            #region querys type 2
+            if (r.trim_user)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "trim_user",
+                           "true",
+                           TwitterRequest.RequestType.Type2));
+            }
+            #endregion
 
             return new TwitterRequest(paramList.ToArray());
+        }
+    }
+
+    public class ShowTweetRequest
+    {
+        //queries type 1
+        public Boolean include_entities = true;
+        public Boolean include_my_retweet = true;
+
+        //queries type 2
+        public Boolean trim_user;
+
+        public static implicit operator TwitterRequest(ShowTweetRequest r)
+        {
+            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            #region querys type 1
+            if (r.include_entities)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "include_entities",
+                           "true",
+                           TwitterRequest.RequestType.Type1));
+            }
+            if (r.include_my_retweet)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "include_my_retweet",
+                           "true",
+                           TwitterRequest.RequestType.Type1));
+            }
+            #endregion
+            #region querys type 2
+            if (r.trim_user)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "trim_user",
+                           "true",
+                           TwitterRequest.RequestType.Type2));
+            }
+            #endregion
+
+            return new TwitterRequest(paramList.ToArray());
+        }
+    }
+
+    public class TwitterRequestException : Exception
+    {
+        public System.Net.HttpStatusCode StatusCode { get; private set; }
+        public Int32 ErrorNumber { get; private set; }
+
+        public TwitterRequestException(System.Net.HttpStatusCode statuscode, Int32 errornumber, String message)
+            : base(message)
+        {
+            StatusCode = statuscode;
+            ErrorNumber = errornumber;
+        }
+
+        public static TwitterRequestException Parse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
+        {
+            return new TwitterRequestException(
+                errorcode, (Int32)errorobject.GetNamedNumber("code"), errorobject.GetNamedString("message"));
+        }
+    }
+
+    public class TwitterRequestProtectedException : Exception
+    {
+        public System.Net.HttpStatusCode StatusCode { get; private set; }
+        public String Request { get; private set; }
+
+        public TwitterRequestProtectedException(System.Net.HttpStatusCode statuscode, String request, String message)
+            : base(message)
+        {
+            StatusCode = statuscode;
+            Request = request;
+        }
+
+        public static TwitterRequestProtectedException Parse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
+        {
+            return new TwitterRequestProtectedException(
+                errorcode, errorobject.GetNamedString("request"), errorobject.GetNamedString("error"));
         }
     }
 
@@ -270,8 +417,8 @@ namespace NemoKachi.TwitterWrapper
     {
         //normal queries
         public Boolean include_entities = true;
-        public Nullable<UInt64> since_id;
         public Boolean include_rts = true;
+        public Nullable<UInt64> since_id;
 
         //posts
 
