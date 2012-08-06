@@ -25,14 +25,19 @@ namespace NemoKachi.CustomElements
 
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+            TwitterWrapper.TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient;
+            TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+
             String sendText;
             SendTextBox.Document.GetText(Windows.UI.Text.TextGetOptions.None, out sendText);
-            TwitterWrapper.TwitterDatas.Tweet twt = await (Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient).SendTweetAsync(
-                (Application.Current.Resources["AccountCollector"] as AccountTokenCollector).TokenCollection[0],
+            TwitterWrapper.TwitterDatas.Tweet twt = await MainClient.SendTweetAsync(
+                collector.TokenCollection[0],
                 new TwitterWrapper.SendTweetRequest()
                 {
-                   status = sendText
+                    status = sendText,
                 });
+            house.AttachTweets(twt);
         }
     }
 }

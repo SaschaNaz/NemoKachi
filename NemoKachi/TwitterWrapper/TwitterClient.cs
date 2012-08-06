@@ -134,6 +134,19 @@ namespace NemoKachi.TwitterWrapper
             return returner;
         }
 
+        public Exception TwitterExceptionParse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
+        {
+            IJsonValue errorarray;
+            if (errorobject.TryGetValue("errors", out errorarray))
+            {
+                return TwitterRequestException.Parse(errorcode, errorarray.GetArray()[0].GetObject());
+            }
+            else
+            {
+                return TwitterRequestProtectedException.Parse(errorcode, errorobject);
+            }
+        }
+
         /// <summary>
         /// 일반 트윗, 또는 멘션 등의 트윗을 보냅니다.
         /// </summary>
@@ -145,6 +158,38 @@ namespace NemoKachi.TwitterWrapper
                 aToken, HttpMethod.Post,
                 "https://api.twitter.com/1/statuses/update.json", tweetQuery, null);
             return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+        }
+
+        public async Task<Tweet> ShowTweetAsync(AccountToken aToken, ShowTweetRequest tweetQuery, UInt64 Id)
+        {
+            HttpResponseMessage response = await OAuthAsync(
+                aToken, HttpMethod.Get,
+                String.Format("https://api.twitter.com/1/statuses/show/{0}.json", Id), tweetQuery, null);
+            if (response.IsSuccessStatusCode)
+            {
+                return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine(await response.Content.ReadAsStringAsync());
+
+                throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+                //switch (response.StatusCode)
+                //{
+                //    case System.Net.HttpStatusCode.NotFound:
+                //        {
+                //            throw new ShowTweetException(ShowTweetException.ErrorType.Unknown, "Wake ga wakaranai");
+                //        }
+                //    case System.Net.HttpStatusCode.Forbidden:
+                //        {
+                //            throw new ShowTweetException(ShowTweetException.ErrorType.Unknown, "Wake ga wakaranai");
+                //        }
+                //    default:
+                //        {
+                //            throw new ShowTweetException(ShowTweetException.ErrorType.Unknown, "Wake ga wakaranai");
+                //        }
+                //}
+            }
         }
 
         public async Task<HttpResponseMessage> SendRetweet(AccountToken aToken, UInt64 id)

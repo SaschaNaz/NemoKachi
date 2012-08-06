@@ -67,6 +67,47 @@ namespace NemoKachi
             //pageState["isLoginSucceed"] = true;
         }
 
+        private async void IdLoad(object sender, RoutedEventArgs e)
+        {
+            AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+            TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+
+            String message = null;
+            UInt64 Id = Convert.ToUInt64(idBox.Text);
+            try
+            {
+                message = (await house.LoadTweet(collector.TokenCollection[0], Id)).Text;
+            }
+            catch (TweetStorage.TweetStorageLockedException)
+            {
+                message = "You locked this tweet. Do you want to unlock it?";
+            }
+            catch (TwitterRequestException ex)
+            {
+                if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    message = "We could't find the tweet you requested because it doesn't exist. Sorry about that.";
+                }
+                else
+                {
+                    message = String.Format("We couldn't find the tweet you requested and we don't know why.\r\nMessage: {0}\r\nId: {1}", ex.Message, Id);
+                }
+            }
+            catch (TwitterRequestProtectedException ex)
+            {
+                if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    message = "We could't get the tweet you requested because the user protected it from you. Sorry about that.";
+                }
+                else
+                {
+                    message = String.Format("We couldn't get the tweet you requested and we don't know why.\r\nMessage: {0}\r\nId: {1}", ex.Message, Id);
+                }
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+        }
+
         //private void TweetIDRecieved(object sender, RoutedEventArgs e)
         //{
         //    Windows.Storage.ApplicationDataContainer localSettings =

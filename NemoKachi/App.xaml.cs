@@ -56,7 +56,7 @@ namespace NemoKachi
                     "HeOeHqoUvfzrcRNUM90iPw",
                     "nNNdPQEhAbu986vIKnqRfjScwfZzvhVovSUT5iWhavA",
                     new System.Net.Http.Headers.ProductInfoHeaderValue("NemoKachi", "Alpha-RP")));
-            TweetHouse house = new TweetHouse(new TimeSpan(0, 10, 0));
+            TweetStorage house = new TweetStorage(new TimeSpan(0, 10, 0));
             house.ManageStart();
             Application.Current.Resources.Add(
                 "TweetHouse", house);
