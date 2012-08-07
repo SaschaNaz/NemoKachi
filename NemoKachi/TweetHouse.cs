@@ -65,7 +65,9 @@ namespace NemoKachi
             {
                 TwitterWrapper.TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient;
 
-                return await MainClient.ShowTweetAsync(aToken, new ShowTweetRequest(), Id);
+                Tweet twt = await MainClient.ShowTweetAsync(aToken, new ShowTweetRequest(), Id);
+                AttachTweets(twt);
+                return twt;
             }
             //찾지 못했을 때 클라이언트를 이용해 새로 받아오는 코드 추가
         }
