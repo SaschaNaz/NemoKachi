@@ -82,27 +82,9 @@ namespace NemoKachi
             {
                 message = "You locked this tweet. Do you want to unlock it?";
             }
-            catch (TwitterRequestException ex)
+            catch (Exception ex)
             {
-                if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    message = "We could't find the tweet you requested because it doesn't exist. Sorry about that.";
-                }
-                else
-                {
-                    message = String.Format("We couldn't find the tweet you requested and we don't know why.\r\nMessage: {0}\r\nId: {1}", ex.Message, Id);
-                }
-            }
-            catch (TwitterRequestProtectedException ex)
-            {
-                if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                {
-                    message = "We could't get the tweet you requested because the user protected it from you. Sorry about that.";
-                }
-                else
-                {
-                    message = String.Format("We couldn't get the tweet you requested and we don't know why.\r\nMessage: {0}\r\nId: {1}", ex.Message, Id);
-                }
+                message = String.Format("We couldn't get the tweet you requested. Sorry for that.\r\nMessage: {0}\r\nId: {1}", ex.Message, Id);
             }
             if (message != null)
                 await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
