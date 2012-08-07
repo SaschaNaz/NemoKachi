@@ -337,7 +337,7 @@ namespace NemoKachi.TwitterWrapper
         public Boolean include_my_retweet = true;
 
         //queries type 2
-        public Boolean trim_user;
+        public Boolean trim_user = false;
 
         public static implicit operator TwitterRequest(ShowTweetRequest r)
         {
@@ -415,16 +415,18 @@ namespace NemoKachi.TwitterWrapper
 
     public class LocalRefreshRequest
     {
-        //normal queries
+        //queries type 1
         public Boolean include_entities = true;
         public Boolean include_rts = true;
-        public Nullable<UInt64> since_id;
+        public Nullable<UInt64> max_id;
 
-        //posts
+        //queries type 2
+        public Nullable<UInt64> since_id;
 
         public static implicit operator TwitterRequest(LocalRefreshRequest r)
         {
             List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            #region querys type 1
             if (r.include_entities)
             {
                 paramList.Add(
@@ -441,6 +443,16 @@ namespace NemoKachi.TwitterWrapper
                         "true",
                         TwitterRequest.RequestType.Type1));
             }
+            if (r.max_id != null)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "max_id",
+                           r.max_id.Value,
+                           TwitterRequest.RequestType.Type1));
+            }
+            #endregion
+            #region querys type 2
             if (r.since_id != null)
             {
                 paramList.Add(
@@ -449,6 +461,7 @@ namespace NemoKachi.TwitterWrapper
                            r.since_id.Value,
                            TwitterRequest.RequestType.Type2));
             }
+            #endregion
 
             return new TwitterRequest(paramList.ToArray());
         }
@@ -456,17 +469,19 @@ namespace NemoKachi.TwitterWrapper
 
     public class SpecificUserRefreshRequest
     {
-        //normal queries
+        //queries type 1
         public Boolean include_entities = true;
-        public Nullable<UInt64> since_id;
         public Boolean include_rts = true;
-        public String screen_name;
+        public Nullable<UInt64> max_id;
 
-        //posts
+        //queries type 2
+        public String screen_name;
+        public Nullable<UInt64> since_id;
 
         public static implicit operator TwitterRequest(SpecificUserRefreshRequest r)
         {
             List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            #region querys type 1
             if (r.include_entities)
             {
                 paramList.Add(
@@ -483,6 +498,16 @@ namespace NemoKachi.TwitterWrapper
                         "true",
                         TwitterRequest.RequestType.Type1));
             }
+            if (r.max_id != null)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "max_id",
+                           r.max_id.Value,
+                           TwitterRequest.RequestType.Type1));
+            }
+            #endregion
+            #region querys type 2
             if (r.screen_name != null)
             {
                 paramList.Add(
@@ -499,6 +524,7 @@ namespace NemoKachi.TwitterWrapper
                            r.since_id.Value,
                            TwitterRequest.RequestType.Type2));
             }
+            #endregion
 
             return new TwitterRequest(paramList.ToArray());
         }
@@ -514,6 +540,7 @@ namespace NemoKachi.TwitterWrapper
         /// 마지막으로 불러들인 트윗 ID를 기억
         /// </summary>
         Nullable<UInt64> LoadedLastTweetID { get; set; }
+        Nullable<UInt64> LoadedFirstGapTweetID { get; set; }
     }
 
     public class FollowingTweetsData : ITimelineData
@@ -532,6 +559,11 @@ namespace NemoKachi.TwitterWrapper
         {
             get { return RestOption.since_id; }
             set { RestOption.since_id = value; }
+        }
+        public Nullable<UInt64> LoadedFirstGapTweetID
+        {
+            get { return RestOption.max_id; }
+            set { RestOption.max_id = value; }
         }
 
         public FollowingTweetsData(UInt64 accountID, LocalRefreshRequest restOption)
@@ -563,6 +595,11 @@ namespace NemoKachi.TwitterWrapper
             get { return RestOption.since_id; }
             set { RestOption.since_id = value; }
         }
+        public Nullable<UInt64> LoadedFirstGapTweetID
+        {
+            get { return RestOption.max_id; }
+            set { RestOption.max_id = value; }
+        }
 
         public MentionTweetsData(UInt64 accountID, LocalRefreshRequest restOption)
         {
@@ -592,6 +629,11 @@ namespace NemoKachi.TwitterWrapper
         {
             get { return RestOption.since_id; }
             set { RestOption.since_id = value; }
+        }
+        public Nullable<UInt64> LoadedFirstGapTweetID
+        {
+            get { return RestOption.max_id; }
+            set { RestOption.max_id = value; }
         }
 
         public SpecificUserTweetsData(UInt64 accountID, SpecificUserRefreshRequest restOption)
