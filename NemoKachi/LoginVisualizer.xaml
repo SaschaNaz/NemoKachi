@@ -11,27 +11,39 @@
         <local:LoginphaseStringConverter x:Key="loginphaseStringConverter" />
     </UserControl.Resources>
     
-    <Grid x:Name="LayoutRoot" Grid.RowSpan="2" Background="#4C808080" >
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Button Content="&#xE10A;" Style="{StaticResource IconButtonStyle}" FontSize="40" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="36,56,0,0" Click="Button_Click" />
-        <ProgressRing HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="100" Height="100"  IsActive="True"  />
-        <TextBlock Grid.Row="1" Margin="0,50,0,0" x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
-      
-        <Grid x:Name="webviewGrid" Visibility="Collapsed" Grid.RowSpan="2" MaxWidth="1024" Margin="200,0,200,0" Background="White" >
-            <Grid MaxHeight="920">
+    <Grid x:Name="LayoutRoot" Grid.RowSpan="2" Background="#4C000000" >
+        <Grid x:Name="MainLayout" Grid.RowSpan="2" MaxWidth="1024" Margin="200,0,200,0" Background="White" >
+            <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="50" />
-                    <RowDefinition Height="35" />
+                    <RowDefinition Height="140" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TextBlock Text="Twitter Authentication" Style="{StaticResource HeaderTextStyle}" Foreground="Black" Margin="50,0,0,0" />
-                <TextBlock Grid.Row="1" Text="Give the authorization mail to your magpie so that it can send it to Twitter!" Foreground="Black" FontSize="16" VerticalAlignment="Bottom"  TextWrapping="Wrap" Margin="50,0,0,0" />
-                <Button Grid.Row="2" Style="{StaticResource RefreshAppBarButtonStyle}" VerticalAlignment="Top" />
-                <WebView Grid.Row="2" x:Name="webView1" Margin="80,40,80,40" />
-            </Grid>  
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Content="&#xE10A;" Style="{StaticResource IconDarkButtonStyle}" FontSize="40" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,10,30" Click="Button_Click" />
+                    <TextBlock Grid.Column="1" Text="Twitter Authentication" Style="{StaticResource PageHeaderTextStyle}" Foreground="Black"  VerticalAlignment="Bottom"  />
+                </Grid>
+                <Grid Grid.Row="1" x:Name="webviewGrid" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Please give the authorization letter to your magpie!" Foreground="Black" FontSize="16" VerticalAlignment="Bottom"  TextWrapping="Wrap" Margin="50,0,0,0" />
+                    <Button Grid.Row="1" Style="{StaticResource RefreshAppBarButtonStyle}" VerticalAlignment="Top" />
+                    <WebView Grid.Row="1" x:Name="webView1" Margin="80,20,80,0" VerticalAlignment="Stretch" />
+                </Grid>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <ProgressRing HorizontalAlignment="Center" Foreground="#FF00A2FF" VerticalAlignment="Bottom" Width="100" Height="100"  IsActive="True"  />
+                <TextBlock Grid.Row="1" Foreground="#FF00A2FF" Margin="0,50,0,0" x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>
