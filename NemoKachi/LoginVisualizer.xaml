@@ -28,10 +28,10 @@
                 </Grid>
                 <Grid Grid.Row="1" x:Name="webviewGrid" Visibility="Collapsed">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="35" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Please give the authorization letter to your magpie!" Foreground="Black" FontSize="16" VerticalAlignment="Bottom"  TextWrapping="Wrap" Margin="50,0,0,0" />
+                    <TextBlock Text="Please give the authorization letter to your magpie!" Foreground="Black" FontSize="20" VerticalAlignment="Bottom" TextWrapping="Wrap" Margin="50,0,0,0" />
                     <Button Grid.Row="1" Style="{StaticResource RefreshAppBarButtonStyle}" VerticalAlignment="Top" />
                     <WebView Grid.Row="1" x:Name="webView1" Margin="80,20,80,0" VerticalAlignment="Stretch" />
                 </Grid>
@@ -42,7 +42,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <ProgressRing HorizontalAlignment="Center" Foreground="#FF00A2FF" VerticalAlignment="Bottom" Width="100" Height="100"  IsActive="True"  />
-                <TextBlock Grid.Row="1" Foreground="#FF00A2FF" Margin="0,50,0,0" x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
+                <TextBlock Grid.Row="1" Foreground="Black" Margin="0,50,0,0" x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
             </Grid>
         </Grid>
     </Grid>

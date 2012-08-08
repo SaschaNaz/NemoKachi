@@ -90,10 +90,14 @@ namespace NemoKachi
             RemoveWebView();
         }
 
-        public WebView SetWebView(Uri AuthUri)
+        public WebView GetWebView()
+        {
+            return webView1;
+        }
+
+        public void SetWebView()
         {
             webviewGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            return webView1;
         }
 
         public void RemoveWebView()
