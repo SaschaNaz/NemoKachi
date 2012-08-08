@@ -53,9 +53,14 @@ namespace NemoKachi.CustomElements
                         {
                             try
                             {
-                                while (tweets.Length == 20)//If it is 20, the max count, then there may be some more tweets that not be loaded.
+                                while (tweets.Last().Id != tlData.LoadedLastTweetID)//
+                                /*
+                                 * 처음엔 들어온 트윗들 중에 가장 마지막 트윗이 있는지 트윗 마지막부터 거꾸로 순서대로 확인하고 끊었으나 since_id는 그 트윗은 포함하지 않게 되므로 끝없이 로딩하게 됨If it is 20, the max count, then there may be some more tweets that not be loaded.
+                                 * If it is 20, the max count, then there may be some more tweets that not be loaded. 로 바꾸었으나, max count가 항상 안 들어와서 절망
+                                 * since_id를 하나 빼고 로드된 트윗 중 마지막 트윗이 타임라인 트윗 중 가장 위 트윗과 같은지 확인하고 끊기? 는 트윗 하나 더 불러오게 되어서 데이터가 조금 낭비되는데 ㅠㅠ 는 이걸로 일단 함
+                                 */
                                 {
-                                    tlData.LoadedFirstGapTweetID = tweets.Last().Id;
+                                    tlData.LoadedFirstGapTweetID = tweets.Last().Id - 1;
                                     tweets = await MainClient.RefreshAsync(aToken, tlData);
                                     house.AttachTweets(tweets);
                                     (this.DataContext as ColumnData).AttachTweets(tweets);

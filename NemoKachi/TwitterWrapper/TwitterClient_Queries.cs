@@ -557,8 +557,8 @@ namespace NemoKachi.TwitterWrapper
         public LocalRefreshRequest RestOption { get; private set; }
         public Nullable<UInt64> LoadedLastTweetID
         {
-            get { return RestOption.since_id; }
-            set { RestOption.since_id = value; }
+            get { return RestOption.since_id + 1; }
+            set { RestOption.since_id = value - 1; }
         }
         public Nullable<UInt64> LoadedFirstGapTweetID
         {
@@ -592,8 +592,8 @@ namespace NemoKachi.TwitterWrapper
         public LocalRefreshRequest RestOption { get; private set; }
         public Nullable<UInt64> LoadedLastTweetID
         {
-            get { return RestOption.since_id; }
-            set { RestOption.since_id = value; }
+            get { return RestOption.since_id + 1; }
+            set { RestOption.since_id = value - 1; }
         }
         public Nullable<UInt64> LoadedFirstGapTweetID
         {
@@ -627,8 +627,8 @@ namespace NemoKachi.TwitterWrapper
         public SpecificUserRefreshRequest RestOption { get; private set; }
         public Nullable<UInt64> LoadedLastTweetID
         {
-            get { return RestOption.since_id; }
-            set { RestOption.since_id = value; }
+            get { return RestOption.since_id + 1; }
+            set { RestOption.since_id = value - 1; }
         }
         public Nullable<UInt64> LoadedFirstGapTweetID
         {
