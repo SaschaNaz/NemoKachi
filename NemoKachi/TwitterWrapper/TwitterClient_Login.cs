@@ -26,7 +26,8 @@ namespace NemoKachi.TwitterWrapper
             /// </summary>
             /// <param name="AuthUri">An URI that a WebView will initially navigate to.</param>
             /// <returns></returns>
-            WebView SetWebView(Uri AuthUri);
+            WebView GetWebView();
+            void SetWebView();
             /// <summary>
             /// Removes WebView from ILoginVisualizer
             /// </summary>
@@ -150,7 +151,7 @@ namespace NemoKachi.TwitterWrapper
                         {
                             //"Authorizing this app on your account...";
                             Vis.Phase = LoginPhase.AuthorizingApp;
-                            WebView webView1 = Vis.SetWebView(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
+                            WebView webView1 = Vis.GetWebView();
                             Windows.UI.Xaml.Navigation.LoadCompletedEventHandler handler = null;
                             handler = new Windows.UI.Xaml.Navigation.LoadCompletedEventHandler(
                                 async delegate(Object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -180,6 +181,10 @@ namespace NemoKachi.TwitterWrapper
                                                     OnLoginCompleted(new LoginCompletedEventArgs() { Succeed = false });
                                                 }
                                             }
+                                        }
+                                        else
+                                        {
+                                            Vis.SetWebView();
                                         }
                                     }
                                     else
