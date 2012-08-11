@@ -32,6 +32,7 @@ namespace NemoKachi.TwitterWrapper
             /// Removes WebView from ILoginVisualizer
             /// </summary>
             void RemoveWebView();
+            Boolean IsWebViewSet { get; }
             event RoutedEventHandler Closed;
         }
         public enum LoginPhase
@@ -182,7 +183,7 @@ namespace NemoKachi.TwitterWrapper
                                                 }
                                             }
                                         }
-                                        else
+                                        else if(!Vis.IsWebViewSet)
                                         {
                                             Vis.SetWebView();
                                         }
