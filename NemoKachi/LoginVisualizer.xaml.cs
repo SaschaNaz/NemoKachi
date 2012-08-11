@@ -95,14 +95,21 @@ namespace NemoKachi
             return webView1;
         }
 
+        public Boolean IsWebViewSet { get; private set; }
+
         public void SetWebView()
         {
-            webviewGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            IsWebViewSet = true;
+            WebViewStart.Begin();
+            //webviewGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }
 
         public void RemoveWebView()
         {
-            webviewGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            IsWebViewSet = false;
+            WebViewEnd.Begin();
+            //WebViewStoryboard.
+            //webviewGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
