@@ -21,7 +21,7 @@ namespace NemoKachi.CustomElements
 {
     public sealed partial class TimelineColumn : UserControl
     {
-
+        Windows.UI.Xaml.DispatcherTimer timer = new Windows.UI.Xaml.DispatcherTimer() { Interval = new TimeSpan(0, 1, 0) };
         public TimelineColumn()
         {
             this.InitializeComponent();
@@ -58,7 +58,6 @@ namespace NemoKachi.CustomElements
                 {
                     //tlData.LoadedLastTweetID = tweets[0].Id;
                     UInt64 lastId = tweets[0].Id;
-                    house.AttachTweets(tweets);
                     ContextData.AttachTweets(tweets);
 
                     if (tlData.LoadedLastTweetID != null)
@@ -74,7 +73,6 @@ namespace NemoKachi.CustomElements
                             {
                                 tlData.LoadedFirstGapTweetID = tweets.Last().Id - 1;
                                 tweets = await MainClient.RefreshAsync(aToken, tlData);
-                                house.AttachTweets(tweets);
                                 (this.DataContext as ColumnData).AttachTweets(tweets);
                             }
 

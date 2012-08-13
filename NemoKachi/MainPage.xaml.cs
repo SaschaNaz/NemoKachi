@@ -69,25 +69,25 @@ namespace NemoKachi
 
         private async void IdLoad(object sender, RoutedEventArgs e)
         {
-            AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
-            TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+            //AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+            //TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
 
-            String message = null;
-            UInt64 Id = Convert.ToUInt64(idBox.Text);
-            try
-            {
-                message = (await house.LoadTweet(collector.TokenCollection[0], Id)).Text;
-            }
-            catch (TweetStorage.TweetStorageLockedException)
-            {
-                message = "You locked this tweet. Do you want to unlock it?";
-            }
-            catch (Exception ex)
-            {
-                message = String.Format("We couldn't get the tweet you requested. Sorry for that.\r\nMessage: {0}\r\nId: {1}", ex.Message, Id);
-            }
-            if (message != null)
-                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+            //String message = null;
+            //UInt64 Id = Convert.ToUInt64(idBox.Text);
+            //try
+            //{
+            //    message = (await house.LoadTweet(collector.TokenCollection[0], Id)).Text;
+            //}
+            //catch (TweetStorage.TweetStorageLockedException)
+            //{
+            //    message = "You locked this tweet. Do you want to unlock it?";
+            //}
+            //catch (Exception ex)
+            //{
+            //    message = String.Format("We couldn't get the tweet you requested. Sorry for that.\r\nMessage: {0}\r\nId: {1}", ex.Message, Id);
+            //}
+            //if (message != null)
+            //    await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
         }
 
         //private void TweetIDRecieved(object sender, RoutedEventArgs e)
