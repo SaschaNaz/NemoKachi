@@ -72,6 +72,11 @@ namespace NemoKachi
                 RegisterTweets(clData, twt.Id);
         }
 
+        public void StoreTweets(params Tweet[] twts)
+        {
+            InternalTweetDatas.AttachTweets(twts);
+        }
+
         public void UnregisterTweet(ColumnData clData, UInt64 twtid)
         {
             TweetLog twlog;
@@ -97,7 +102,7 @@ namespace NemoKachi
                 TwitterWrapper.TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient;
 
                 twt = await MainClient.ShowTweetAsync(aToken, new ShowTweetRequest(), Id);
-                InternalTweetDatas.AttachTweets(twt);
+                StoreTweets(twt);
                 return twt;
             }
         }
