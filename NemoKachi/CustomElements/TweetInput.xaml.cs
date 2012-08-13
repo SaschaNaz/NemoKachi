@@ -37,7 +37,7 @@ namespace NemoKachi.CustomElements
                 {
                     status = sendText,
                 });
-            house.AttachTweets(twt);
+            //house.AttachTweets(twt);
         }
     }
 }

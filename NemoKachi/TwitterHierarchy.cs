@@ -10,8 +10,9 @@ using Windows.UI.Xaml;
 
 namespace NemoKachi
 {
-    public class ColumnData : DependencyObject
+    public class ColumnData : DependencyObject, IDisposable
     {
+        Windows.UI.Xaml.DispatcherTimer timer = new Windows.UI.Xaml.DispatcherTimer() { Interval = new TimeSpan(0, 1, 0) };
         public ObservableCollection<ITimelineData> TimelineDatas { get; set; }
         public ObservableCollection<Tweet> TweetList { get; set; }
         public String ColumnTitle
@@ -19,6 +20,8 @@ namespace NemoKachi
             get { return (String)GetValue(ColumnTitleProperty); }
             set { SetValue(ColumnTitleProperty, value); }
         }
+        public TimeSpan MaxRemainTime { get; set; }
+        public Int32 MinTweetCount { get; set; }
 
         public static readonly DependencyProperty ColumnTitleProperty =
             DependencyProperty.Register("ColumnTitle",
@@ -28,22 +31,56 @@ namespace NemoKachi
 
         public ColumnData()
         {
+            MaxRemainTime = new TimeSpan(0, 10, 0);
+            MinTweetCount = 20;
+            timer.Tick += timer_Tick;
             TimelineDatas = new ObservableCollection<ITimelineData>();
             TweetList = new ObservableCollection<Tweet>();
+            timer.Start();
+        }
+
+        void timer_Tick(object sender, object e)
+        {
+            TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+            Tweet lastTweet = LastOrNull();
+            while (lastTweet != null && TweetList.Count > MinTweetCount && DateTime.Now - house.GetTweetRegisteredTime(lastTweet.Id, this) > MaxRemainTime)
+            {
+                TweetList.Remove(lastTweet);
+                house.UnregisterTweet(this, lastTweet.Id);
+                lastTweet = LastOrNull();
+            }
+        }
+
+        Tweet LastOrNull()
+        {
+            if (TweetList.Count > 0)
+            {
+                return TweetList.Last();
+            }
+            else
+            {
+                return null;
+            }
         }
         
         public ColumnData(params ITimelineData[] tlDatas)
         {
+            MaxRemainTime = new TimeSpan(0, 1, 0);
+            MinTweetCount = 20;
+            timer.Tick += timer_Tick;
             TimelineDatas = new ObservableCollection<ITimelineData>(tlDatas);
             TweetList = new ObservableCollection<Tweet>();
+            timer.Start();
         }
 
 
         public void AttachTweets(params Tweet[] twts)
         {
+            TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
             for (Int32 i = twts.Length - 1; i >= 0; i--)
             {
                 AttachTweet(twts[i]);
+                house.RegisterTweets(this, twts[i].Id);
             }
         }
 
@@ -87,6 +124,11 @@ namespace NemoKachi
                 }
             }
             TweetList.Add(twt);
+        }
+
+        public void Dispose()
+        {
+            timer.Stop();
         }
     }
 }
