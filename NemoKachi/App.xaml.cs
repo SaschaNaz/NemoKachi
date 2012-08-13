@@ -53,8 +53,8 @@ namespace NemoKachi
             Application.Current.Resources.Add(
                 "MainClient",
                 new TwitterWrapper.TwitterClient(
-                    "HeOeHqoUvfzrcRNUM90iPw",
-                    "nNNdPQEhAbu986vIKnqRfjScwfZzvhVovSUT5iWhavA",
+                    "Vzy0eqszuDF4pEATmO7ag",
+                    "p6j1NTI0GBbt1Tts6ckyr4I2dptaXog9g6QSjOojd1Q",
                     new System.Net.Http.Headers.ProductInfoHeaderValue("NemoKachi", "Alpha-RP")));
             TweetStorage house = new TweetStorage(new TimeSpan(0, 10, 0));
             house.ManageStart();

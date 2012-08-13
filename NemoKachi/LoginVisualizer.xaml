@@ -12,7 +12,7 @@
     </UserControl.Resources>
     
     <Grid Background="#4C000000">
-        <Grid x:Name="LayoutRoot" Grid.RowSpan="2" MaxHeight="730" Background="White"  >
+        <Grid x:Name="LayoutRoot" Grid.RowSpan="2" MaxHeight="680" Background="White"  >
             <Grid x:Name="MainLayout" Grid.RowSpan="2" MaxWidth="800" Margin="200,0,200,0">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -34,10 +34,10 @@
                         </Storyboard>
                         <Storyboard x:Name="WebViewEnd">
                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="webRefreshButton" Storyboard.TargetProperty="Opacity">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="0.0"/>
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="0"/>
                             </ObjectAnimationUsingKeyFrames>
                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="webviewGrid" Storyboard.TargetProperty="Visibility">
-                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Collapsed"/>
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
                             </ObjectAnimationUsingKeyFrames>
                         </Storyboard>
                     </Grid.Resources>
@@ -59,7 +59,7 @@
                         <TextBlock x:Name="authText" Text="Please give the authorization letter to your magpie!" Foreground="Black" FontSize="20" VerticalAlignment="Bottom" TextWrapping="Wrap"  />
                         <Rectangle Grid.Row="1" Margin="0,15,0,20" Fill="Lavender" />
                         <Button x:Name="webRefreshButton" Grid.Row="1" Style="{StaticResource IconDarkButtonStyle}" VerticalAlignment="Top" Content="&#xE117;" FontSize="40" Margin="0,30" Opacity="0" />
-                        <WebView Grid.Row="1" x:Name="webView1" Margin="50,20,5,25" VerticalAlignment="Stretch" />
+                        <WebView Grid.Row="1" x:Name="webView1" Margin="50,20,5,25" />
                     </Grid>
                 </Grid>
             </Grid>

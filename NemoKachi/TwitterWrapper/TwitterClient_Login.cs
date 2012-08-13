@@ -194,7 +194,7 @@ namespace NemoKachi.TwitterWrapper
                                     }
                                 });
                             webView1.LoadCompleted += handler;
-                            webView1.Navigate(new Uri("https://api.twitter.com/oauth/authenticate?oauth_token=" + loginparams["oauth_token"]));
+                            webView1.Navigate(new Uri("https://api.twitter.com/oauth/authorize?oauth_token=" + loginparams["oauth_token"]));
                             Token.oauth_token_secret = loginparams["oauth_token_secret"];
                         }
                         else
