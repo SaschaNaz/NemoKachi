@@ -410,17 +410,20 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         }
     }
 
-    public struct TwitterUser
+    public class TwitterUser
     {
-        readonly JsonObject JsonData;
-        public String JsonMessage
-        {
-            get { return JsonData.Stringify(); }
-        }
+        //readonly JsonObject JsonData;
+        //public String JsonMessage
+        //{
+        //    get { return JsonData.Stringify(); }
+        //}
 
-        public TwitterUser(JsonObject jsob)
+        public TwitterUser(JsonObject jo)
         {
-            JsonData = jsob;
+            ProfileImageUrl = new Uri(jo.GetNamedString("profile_image_url_https"));
+            Id = Convert.ToUInt64(jo.GetNamedString("id_str"));
+            Name = jo.GetNamedString("name");
+            ScreenName = jo.GetNamedString("screen_name");
         }
 
         //public Boolean IsDefaultProfileImage;
@@ -436,10 +439,7 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         //public Nullable<Boolean> Notifications;
         //public String TimeZone;
         //public Windows.UI.Xaml.Media.Color ProfileBackgroundColor;
-        public Uri GetProfileImageUrl()
-        {
-            return new Uri(JsonData.GetNamedString("profile_image_url_https"));
-        }//HTTPS too
+        public Uri ProfileImageUrl { get; set; }//HTTPS too
         //public String Description;
         //public Boolean IsContributorsEnabled;
         //public Boolean IsProfileBackgroundTile;
@@ -452,26 +452,15 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         //public Boolean IsDefaultProfile;
         //public Windows.UI.Xaml.Media.Color ProfileSidebarBorderColor;
         //public Boolean IsProtected;
-        public UInt64 GetId()
-        {
-            //System.Diagnostics.Debug.WriteLineIf(
-            //System.Diagnostics.Debug.WriteLine(JsonMessage);
-            return Convert.ToUInt64(JsonData.GetNamedString("id_str"));
-        }
+        public UInt64 Id { get; set; }
         //public Uri Url;
-        public String GetName()
-        {
-            return JsonData.GetNamedString("name");
-        }
+        public String Name { get; set; }
         //public Boolean IsProfileUseBackgroundImage;
         //public String Language;
         //public Boolean IsGeoEnabled;
         //public Int32 UtcOffset;
         //public Windows.UI.Xaml.Media.Color ProfileTextColor;
-        public String GetScreenName()
-        {
-            return JsonData.GetNamedString("screen_name");
-        }
+        public String ScreenName { get; set; }
 
         //public TwitterUser MakeFromJsonObject(JsonObject jsob)
         //{
