@@ -175,15 +175,7 @@ namespace NemoKachi
             if (TweetLogList.TryGetValue(Id, out storedLog))
             {
                 ColumnData sourceColumn = storedLog.GetStoredColumn();
-                if (sourceColumn.TweetList.Count > 0)
-                {
-                    return sourceColumn.TweetList.First(delegate(Tweet twt)
-                    {
-                        if (twt.Id == Id)
-                            return true;
-                        else return false;
-                    });
-                }
+                return sourceColumn.FindTweetWithId(Id);
             }
             return null;
         }
