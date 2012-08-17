@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
-  <Identity Name="9af4f84d-b72d-49f6-a0e0-eddff852e6a7" Publisher="CN=Sangmin" Version="1.0.0.1" />
+  <Identity Name="9af4f84d-b72d-49f6-a0e0-eddff852e6a7" Publisher="CN=Sangmin" Version="1.0.0.2" />
   <Properties>
     <DisplayName>NemoKachi</DisplayName>
     <PublisherDisplayName>Sangmin</PublisherDisplayName>

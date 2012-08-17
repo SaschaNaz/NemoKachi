@@ -73,13 +73,13 @@ namespace NemoKachi
                     else
                         break;
                 }
-                //else if (itemtype == typeof(TimeGapEnd))
-                //{
-                //    while (TweetList.Count > 0 && TweetList.Last().GetType() != typeof(TimeGapStart))
-                //        TweetList.Remove(TweetList.Last());
-                //    if (TweetList.Count > 0)
-                //        TweetList.Remove(TweetList.Last());
-                //}
+                else if (itemtype == typeof(TimeGapEnd))
+                {
+                    while (TweetList.Count > 0 && TweetList.Last().GetType() != typeof(TimeGapStart))
+                        TweetList.Remove(TweetList.Last());
+                    if (TweetList.Count > 0)
+                        TweetList.Remove(TweetList.Last());
+                }
             }
         }
 
@@ -165,22 +165,22 @@ namespace NemoKachi
                         return;
                     }
                 }
-                //else if (itemtype == typeof(TimeGapStart))
-                //{
-                //    TimeGapStart startitem = TweetList[i] as TimeGapStart;
-                //    if (startitem.FirstGapTweetID < twt.Id)
-                //        TweetList.Insert(i, twt);
-                //    else if (startitem.FirstGapTweetID == twt.Id)
-                //        return;
-                //}
-                //else if (itemtype == typeof(TimeGapEnd))
-                //{
-                //    TimeGapEnd enditem = TweetList[i] as TimeGapEnd;
-                //    if (enditem.LastGapTweetID < twt.Id)
-                //        TweetList.Insert(i, twt);
-                //    else if (enditem.LastGapTweetID == twt.Id)
-                //        return;
-                //}
+                else if (itemtype == typeof(TimeGapStart))
+                {
+                    TimeGapStart startitem = TweetList[i] as TimeGapStart;
+                    if (startitem.FirstGapTweetID < twt.Id)
+                        TweetList.Insert(i, twt);
+                    else if (startitem.FirstGapTweetID == twt.Id)
+                        return;
+                }
+                else if (itemtype == typeof(TimeGapEnd))
+                {
+                    TimeGapEnd enditem = TweetList[i] as TimeGapEnd;
+                    if (enditem.LastGapTweetID < twt.Id)
+                        TweetList.Insert(i, twt);
+                    else if (enditem.LastGapTweetID == twt.Id)
+                        return;
+                }
             }
             TweetList.Add(twt);
         }
@@ -189,5 +189,15 @@ namespace NemoKachi
         {
             timer.Stop();
         }
+    }
+
+    class TimeGapStart
+    {
+        public UInt64 FirstGapTweetID { get; set; }
+    }
+
+    class TimeGapEnd
+    {
+        public UInt64 LastGapTweetID { get; set; }
     }
 }

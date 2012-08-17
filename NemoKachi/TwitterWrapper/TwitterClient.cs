@@ -136,10 +136,24 @@ namespace NemoKachi.TwitterWrapper
 
         public Exception TwitterExceptionParse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
         {
-            IJsonValue errorarray;
-            if (errorobject.TryGetValue("errors", out errorarray))
+            IJsonValue errors;
+            if (errorobject.TryGetValue("errors", out errors))
             {
-                return TwitterRequestException.Parse(errorcode, errorarray.GetArray()[0].GetObject());
+                if (errors.ValueType == JsonValueType.String)
+                {
+                    return new TwitterRequestStringException(errorcode, errors.GetString());
+                }
+                else if (errors.ValueType == JsonValueType.Array)
+                {
+                    return TwitterRequestException.Parse(errorcode, errors.GetArray()[0].GetObject());
+                }
+                else
+                {
+                    return new Exception(
+                        String.Format(
+                            "App cannot understand Twitter's error message. If you screenshot this screen and send it to the developer (see Option tab), the person will thank you very much!\r\n{0}",
+                            errorobject.Stringify()));
+                }
             }
             else
             {
@@ -171,24 +185,82 @@ namespace NemoKachi.TwitterWrapper
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine(await response.Content.ReadAsStringAsync());
+                String message = await response.Content.ReadAsStringAsync();
 
-                throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(await response.Content.ReadAsStringAsync()));
-                //switch (response.StatusCode)
-                //{
-                //    case System.Net.HttpStatusCode.NotFound:
-                //        {
-                //            throw new ShowTweetException(ShowTweetException.ErrorType.Unknown, "Wake ga wakaranai");
-                //        }
-                //    case System.Net.HttpStatusCode.Forbidden:
-                //        {
-                //            throw new ShowTweetException(ShowTweetException.ErrorType.Unknown, "Wake ga wakaranai");
-                //        }
-                //    default:
-                //        {
-                //            throw new ShowTweetException(ShowTweetException.ErrorType.Unknown, "Wake ga wakaranai");
-                //        }
-                //}
+                System.Diagnostics.Debug.WriteLine(message);
+                throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
+            }
+        }
+
+        public async Task<Tweet> RetweetAsync(AccountToken aToken, RetweetRequest tweetQuery, UInt64 Id)
+        {
+            HttpResponseMessage response = await OAuthAsync(
+                aToken, HttpMethod.Post,
+                String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", Id), tweetQuery, null);
+            if (response.IsSuccessStatusCode)
+            {
+                return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+            }
+            else
+            {
+                String message = await response.Content.ReadAsStringAsync();
+
+                System.Diagnostics.Debug.WriteLine(message);
+                throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
+            }
+        }
+
+        public async Task<Tweet> DestroyAsync(AccountToken aToken, DeleteRequest tweetQuery, UInt64 Id)
+        {
+            HttpResponseMessage response = await OAuthAsync(
+                aToken, HttpMethod.Post,
+                String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", Id), tweetQuery, null);
+            if (response.IsSuccessStatusCode)
+            {
+                return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+            }
+            else
+            {
+                String message = await response.Content.ReadAsStringAsync();
+
+                System.Diagnostics.Debug.WriteLine(message);
+                throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
+            }
+        }
+
+        public async Task<Tweet> FavoriteCreateAsync(AccountToken aToken, FavoriteRequest tweetQuery, UInt64 Id)
+        {
+            HttpResponseMessage response = await OAuthAsync(
+                aToken, HttpMethod.Post,
+                String.Format("https://api.twitter.com/1/favorites/create/{0}.json", Id), tweetQuery, null);
+            if (response.IsSuccessStatusCode)
+            {
+                return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+            }
+            else
+            {
+                String message = await response.Content.ReadAsStringAsync();
+
+                System.Diagnostics.Debug.WriteLine(message);
+                throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
+            }
+        }
+
+        public async Task<Tweet> FavoriteDestroyAsync(AccountToken aToken, FavoriteRequest tweetQuery, UInt64 Id)
+        {
+            HttpResponseMessage response = await OAuthAsync(
+                aToken, HttpMethod.Post,
+                String.Format("https://api.twitter.com/1/favorites/destroy/{0}.json", Id), tweetQuery, null);
+            if (response.IsSuccessStatusCode)
+            {
+                return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+            }
+            else
+            {
+                String message = await response.Content.ReadAsStringAsync();
+
+                System.Diagnostics.Debug.WriteLine(message);
+                throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
             }
         }
 

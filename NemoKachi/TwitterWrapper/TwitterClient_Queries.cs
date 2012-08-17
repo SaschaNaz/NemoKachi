@@ -375,6 +375,101 @@ namespace NemoKachi.TwitterWrapper
         }
     }
 
+    public class RetweetRequest
+    {
+        //queries type 1
+        public Boolean include_entities = true;
+
+        //queries type 2
+        public Boolean trim_user = false;
+
+        public static implicit operator TwitterRequest(RetweetRequest r)
+        {
+            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            #region querys type 1
+            if (r.include_entities)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "include_entities",
+                           "true",
+                           TwitterRequest.RequestType.Type1));
+            }
+            #endregion
+            #region querys type 2
+            if (r.trim_user)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "trim_user",
+                           "true",
+                           TwitterRequest.RequestType.Type2));
+            }
+            #endregion
+
+            return new TwitterRequest(paramList.ToArray());
+        }
+    }
+
+    public class DeleteRequest
+    {
+        //queries type 1
+        public Boolean include_entities = true;
+
+        //queries type 2
+        public Boolean trim_user = false;
+
+        public static implicit operator TwitterRequest(DeleteRequest r)
+        {
+            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            #region querys type 1
+            if (r.include_entities)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "include_entities",
+                           "true",
+                           TwitterRequest.RequestType.Type1));
+            }
+            #endregion
+            #region querys type 2
+            if (r.trim_user)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "trim_user",
+                           "true",
+                           TwitterRequest.RequestType.Type2));
+            }
+            #endregion
+
+            return new TwitterRequest(paramList.ToArray());
+        }
+    }
+
+    public class FavoriteRequest
+    {
+        //queries type 1
+        public Boolean include_entities = true;
+
+        public static implicit operator TwitterRequest(FavoriteRequest r)
+        {
+            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            #region querys type 1
+            if (r.include_entities)
+            {
+                paramList.Add(
+                       new TwitterRequest.QueryKeyValue(
+                           "include_entities",
+                           "true",
+                           TwitterRequest.RequestType.Type1));
+            }
+            #endregion
+
+            return new TwitterRequest(paramList.ToArray());
+        }
+    }
+
     public class TwitterRequestException : Exception
     {
         public System.Net.HttpStatusCode StatusCode { get; private set; }
@@ -391,6 +486,17 @@ namespace NemoKachi.TwitterWrapper
         {
             return new TwitterRequestException(
                 errorcode, (Int32)errorobject.GetNamedNumber("code"), errorobject.GetNamedString("message"));
+        }
+    }
+
+    public class TwitterRequestStringException : Exception
+    {
+        public System.Net.HttpStatusCode StatusCode { get; private set; }
+
+        public TwitterRequestStringException(System.Net.HttpStatusCode statuscode, String message)
+            : base(message)
+        {
+            StatusCode = statuscode;
         }
     }
 

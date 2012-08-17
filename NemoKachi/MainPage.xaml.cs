@@ -90,6 +90,162 @@ namespace NemoKachi
                 await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
         }
 
+        private async void RegisterReplyIdTemporary(object sender, RoutedEventArgs e)
+        {
+            String message = null;
+            try
+            {
+                AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+                TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+                String inputText = replyIdBox.Text;
+                if (inputText != "")
+                {
+                    tweetInput.ReplyTweet = await house.LoadTweet(collector.TokenCollection[0], Convert.ToUInt64(inputText));
+                }
+                else
+                    tweetInput.ReplyTweet = null;
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+        }
+
+        private async void RetweetTemporary(object sender, RoutedEventArgs e)
+        {
+            String message = null;
+            try
+            {
+                AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+                TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterClient;
+                TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+                String inputText = retweetIdBox.Text;
+                if (inputText != "")
+                {
+                    TwitterWrapper.TwitterDatas.Tweet targetTweet = await house.LoadTweet(collector.TokenCollection[0], Convert.ToUInt64(inputText));
+
+                    Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog(String.Format("Do you want to retweet this?\r\n{0}", targetTweet.Text));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Retweet", null, "Yes"));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel", null, "No"));
+                    dialog.CancelCommandIndex = 1;
+                    String resultId = (String)(await dialog.ShowAsync()).Id;
+                    if (resultId == "Yes")
+                    {
+                        await MainClient.RetweetAsync(collector.TokenCollection[0], new RetweetRequest(), targetTweet.Id);
+                        await new Windows.UI.Popups.MessageDialog("Retweet Succeed").ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+            //var abc = await  {   }.ShowAsync();
+        }
+
+        private async void DestroyTemporary(object sender, RoutedEventArgs e)
+        {
+            String message = null;
+            try
+            {
+                AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+                TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterClient;
+                TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+                String inputText = destroyIdBox.Text;
+                if (inputText != "")
+                {
+                    TwitterWrapper.TwitterDatas.Tweet targetTweet = await house.LoadTweet(collector.TokenCollection[0], Convert.ToUInt64(inputText));
+
+                    Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog(String.Format("Do you want to destroy this?\r\n{0}", targetTweet.Text));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Destroy", null, "Yes"));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel", null, "No"));
+                    dialog.CancelCommandIndex = 1;
+                    String resultId = (String)(await dialog.ShowAsync()).Id;
+                    if (resultId == "Yes")
+                    {
+                        await MainClient.RetweetAsync(collector.TokenCollection[0], new RetweetRequest(), targetTweet.Id);
+                        await new Windows.UI.Popups.MessageDialog("Destroy Succeed").ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+        }
+        
+        private async void FavoriteTemporary(object sender, RoutedEventArgs e)
+        {
+            String message = null;
+            try
+            {
+                AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+                TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterClient;
+                TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+                String inputText = favoriteIdBox.Text;
+                if (inputText != "")
+                {
+                    TwitterWrapper.TwitterDatas.Tweet targetTweet = await house.LoadTweet(collector.TokenCollection[0], Convert.ToUInt64(inputText));
+
+                    Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog(String.Format("Do you want to favorite this?\r\n{0}", targetTweet.Text));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Favorite", null, "Yes"));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel", null, "No"));
+                    dialog.CancelCommandIndex = 1;
+                    String resultId = (String)(await dialog.ShowAsync()).Id;
+                    if (resultId == "Yes")
+                    {
+                        await MainClient.FavoriteCreateAsync(collector.TokenCollection[0], new FavoriteRequest(), targetTweet.Id);
+                        await new Windows.UI.Popups.MessageDialog("Favorite Succeed").ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+        }
+
+        private async void FavoriteDestroyTemporary(object sender, RoutedEventArgs e)
+        {
+            String message = null;
+            try
+            {
+                AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+                TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterClient;
+                TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+                String inputText = unfavoriteIdBox.Text;
+                if (inputText != "")
+                {
+                    TwitterWrapper.TwitterDatas.Tweet targetTweet = await house.LoadTweet(collector.TokenCollection[0], Convert.ToUInt64(inputText));
+
+                    Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog(String.Format("Do you want to unfavorite this?\r\n{0}", targetTweet.Text));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Unfavorite", null, "Yes"));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel", null, "No"));
+                    dialog.CancelCommandIndex = 1;
+                    String resultId = (String)(await dialog.ShowAsync()).Id;
+                    if (resultId == "Yes")
+                    {
+                        await MainClient.FavoriteDestroyAsync(collector.TokenCollection[0], new FavoriteRequest(), targetTweet.Id);
+                        await new Windows.UI.Popups.MessageDialog("Unfavorite Succeed").ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+        }
+
         //private void TweetIDRecieved(object sender, RoutedEventArgs e)
         //{
         //    Windows.Storage.ApplicationDataContainer localSettings =
