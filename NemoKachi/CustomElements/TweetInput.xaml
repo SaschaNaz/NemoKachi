@@ -10,29 +10,57 @@
     d:DesignWidth="600">
     
     <Border BorderBrush="Gray" BorderThickness="5">
-        <Grid Background="#FFE4E4E4">
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="60" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="10" />
             </Grid.RowDefinitions>
-            <TextBlock Text="わぁぁぁぁぁぃ" FontWeight="Light" FontSize="26" Margin="20,20,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Black" />
-            
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="70" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="70" />
-                </Grid.ColumnDefinitions>
-                <!--First Column-->
-                <Button Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Content="&#xE141;" Style="{StaticResource IconButtonStyle}" FontSize="40" />
-                <Button Grid.Row="1" Width="60" Height="69" VerticalAlignment="Top" Margin="0,60,0,0" Style="{StaticResource ImageButtonStyle}" />
-                <!--Second Column-->
-                <RichEditBox x:Name="SendTextBox" Grid.Column="1" />
-                <!--Third Column-->
-                <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Content="&#xE11C;" Style="{StaticResource IconButtonStyle}" FontSize="40" Click="Button_Click_1" />
+            <Grid x:Name="ReplyGrid" DataContext="{Binding ReplyTweet}" Visibility="Collapsed">
+                <StackPanel>
+                    <Grid HorizontalAlignment="Left">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding User.Name}" FontSize="20" TextTrimming="WordEllipsis" Foreground="Yellow" />
+                        <Grid Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="2,2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="@" FontSize="14" Foreground="#FFDCFFA0" />
+                            <TextBlock Grid.Column="1" Text="{Binding User.ScreenName}" FontSize="14" Foreground="#FFDCFFA0"/>
+                        </Grid>
+                    </Grid>
+                    <TextBlock Text="{Binding Text}" FontSize="16" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="1" Text="{Binding CreatedAt}" FontSize="12" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="2" Text="{Binding Id}" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
             </Grid>
+            <Grid Background="#FFE4E4E4" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="10" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="わぁぁぁぁぁぃ" FontWeight="Light" FontSize="26" Margin="20,20,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Black" />
 
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <!--First Column-->
+                    <Button Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Content="&#xE141;" Style="{StaticResource IconButtonStyle}" FontSize="40" />
+                    <Button Grid.Row="1" Width="60" Height="69" VerticalAlignment="Top" Margin="0,60,0,0" Style="{StaticResource ImageButtonStyle}" />
+                    <!--Second Column-->
+                    <RichEditBox x:Name="SendTextBox" Grid.Column="1" />
+                    <!--Third Column-->
+                    <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Content="&#xE11C;" Style="{StaticResource IconButtonStyle}" FontSize="40" Click="Button_Click_1" />
+                </Grid>
+
+            </Grid>
         </Grid>
     </Border>
 </UserControl>

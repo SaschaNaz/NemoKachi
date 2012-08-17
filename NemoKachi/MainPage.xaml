@@ -41,12 +41,46 @@
 
         <Grid Grid.Row="1">
             <GridView HorizontalAlignment="Left" Width="853" Height="116" ItemsSource="{Binding TokenCollection}" DataContext="{StaticResource AccountCollector}"/>
-            <localelm:TweetInput Width="600" Height="300" />
-            <localelm:TimelineColumn Width="300" Height="600" DataContext="{StaticResource tempColumn}" />
-            <Grid Width="150" Height="30">
-                <TextBox x:Name="idBox" Margin="0,0,40,0" />
-                <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="IdLoad" />
-            </Grid>
+            <localelm:TweetInput x:Name="tweetInput" Width="600" Height="300" />
+            <localelm:TimelineColumn Width="300" Height="600" DataContext="{StaticResource tempColumn}" Margin="14" HorizontalAlignment="Left" />
+            
+            <StackPanel Margin="0,0,23,6" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Grid Width="270" Height="32" Margin="3">
+                    <TextBlock Text="Show" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
+                    <TextBox x:Name="idBox" Margin="120,0,40,0" />
+                    <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="IdLoad" />
+                </Grid>
+
+                <Grid Width="270" Height="32" Margin="3">
+                    <TextBlock Text="Reply" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
+                    <TextBox x:Name="replyIdBox" Margin="120,0,40,0" />
+                    <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="RegisterReplyIdTemporary" />
+                </Grid>
+
+                <Grid Width="270" Height="32" Margin="3">
+                    <TextBlock Text="Retweet" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
+                    <TextBox x:Name="retweetIdBox" Margin="120,0,40,0" />
+                    <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="RetweetTemporary" />
+                </Grid>
+
+                <Grid Width="270" Height="32" Margin="3">
+                    <TextBlock Text="Destroy" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
+                    <TextBox x:Name="destroyIdBox" Margin="120,0,40,0" />
+                    <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="DestroyTemporary" />
+                </Grid>
+
+                <Grid Width="270" Height="32" Margin="3">
+                    <TextBlock Text="Favorite" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
+                    <TextBox x:Name="favoriteIdBox" Margin="120,0,40,0" />
+                    <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="FavoriteTemporary" />
+                </Grid>
+                
+                <Grid Width="270" Height="32" Margin="3">
+                    <TextBlock Text="Unavorite" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
+                    <TextBox x:Name="unfavoriteIdBox" Margin="120,0,40,0" />
+                    <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="FavoriteDestroyTemporary" />
+                </Grid>
+            </StackPanel>
         </Grid>
         
         <VisualStateManager.VisualStateGroups>

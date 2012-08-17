@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using NemoKachi.TwitterWrapper.TwitterDatas;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -21,6 +22,35 @@ namespace NemoKachi.CustomElements
         public TweetInput()
         {
             this.InitializeComponent();
+            DataContext = this;
+        }
+
+        public Tweet ReplyTweet
+        {
+            get
+            {
+                return (Tweet)GetValue(ReplyTweetProperty);
+            }
+            set
+            {
+                SetValue(ReplyTweetProperty, value);
+            }
+        }
+
+        public static readonly DependencyProperty ReplyTweetProperty =
+            DependencyProperty.Register("ReplyTweet",
+            typeof(Tweet),
+            typeof(TweetInput),
+            new PropertyMetadata(null, new Windows.UI.Xaml.PropertyChangedCallback(ReplyTweetChangedCallback)));
+
+        private static void ReplyTweetChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            TweetInput input = d as TweetInput;
+
+            if (e.NewValue != null)
+                input.ReplyGrid.Visibility = Visibility.Visible;
+            else
+                input.ReplyGrid.Visibility = Visibility.Collapsed;
         }
 
         private async void Button_Click_1(object sender, RoutedEventArgs e)
@@ -31,12 +61,15 @@ namespace NemoKachi.CustomElements
 
             String sendText;
             SendTextBox.Document.GetText(Windows.UI.Text.TextGetOptions.None, out sendText);
+            TwitterWrapper.SendTweetRequest tweetrequest = new TwitterWrapper.SendTweetRequest()
+                {
+                    status = sendText
+                };
+            if (ReplyTweet != null)
+                tweetrequest.in_reply_to_status_id = ReplyTweet.Id;
             TwitterWrapper.TwitterDatas.Tweet twt = await MainClient.SendTweetAsync(
                 collector.TokenCollection[0],
-                new TwitterWrapper.SendTweetRequest()
-                {
-                    status = sendText,
-                });
+                tweetrequest);
             house.StoreTweets(twt);
         }
     }
