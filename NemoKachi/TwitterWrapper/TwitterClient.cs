@@ -168,7 +168,7 @@ namespace NemoKachi.TwitterWrapper
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다</returns>
         public async Task<Tweet> SendTweetAsync(AccountToken aToken, SendTweetRequest tweetQuery)
         {
-            HttpResponseMessage response = await OAuthAsync(
+            HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
                 "https://api.twitter.com/1/statuses/update.json", tweetQuery, null);
             return new Tweet(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
@@ -176,7 +176,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<Tweet> ShowTweetAsync(AccountToken aToken, ShowTweetRequest tweetQuery, UInt64 Id)
         {
-            HttpResponseMessage response = await OAuthAsync(
+            HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
                 String.Format("https://api.twitter.com/1/statuses/show/{0}.json", Id), tweetQuery, null);
             if (response.IsSuccessStatusCode)
@@ -194,7 +194,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<Tweet> RetweetAsync(AccountToken aToken, RetweetRequest tweetQuery, UInt64 Id)
         {
-            HttpResponseMessage response = await OAuthAsync(
+            HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", Id), tweetQuery, null);
             if (response.IsSuccessStatusCode)
@@ -212,7 +212,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<Tweet> DestroyAsync(AccountToken aToken, DeleteRequest tweetQuery, UInt64 Id)
         {
-            HttpResponseMessage response = await OAuthAsync(
+            HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", Id), tweetQuery, null);
             if (response.IsSuccessStatusCode)
@@ -230,7 +230,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<Tweet> FavoriteCreateAsync(AccountToken aToken, FavoriteRequest tweetQuery, UInt64 Id)
         {
-            HttpResponseMessage response = await OAuthAsync(
+            HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/favorites/create/{0}.json", Id), tweetQuery, null);
             if (response.IsSuccessStatusCode)
@@ -248,7 +248,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<Tweet> FavoriteDestroyAsync(AccountToken aToken, FavoriteRequest tweetQuery, UInt64 Id)
         {
-            HttpResponseMessage response = await OAuthAsync(
+            HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/favorites/destroy/{0}.json", Id), tweetQuery, null);
             if (response.IsSuccessStatusCode)
@@ -266,7 +266,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<HttpResponseMessage> SendRetweet(AccountToken aToken, UInt64 id)
         {
-            return await OAuthAsync(
+            return await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", id),
                 new TwitterRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
@@ -274,7 +274,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<HttpResponseMessage> Destroy(AccountToken aToken, UInt64 id)
         {
-            return await OAuthAsync(
+            return await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
                 String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", id),
                 new TwitterRequest(new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1)), null);
@@ -287,7 +287,7 @@ namespace NemoKachi.TwitterWrapper
         public async Task<Tweet[]> RefreshAsync(AccountToken aToken, TwitterWrapper.ITimelineData tlData)
         {
             List<Tweet> tweets = new List<Tweet>();
-            HttpResponseMessage response = await OAuthAsync(
+            HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
                 tlData.RestURI.OriginalString, tlData.GetRequest(), null);
             String str = await response.Content.ReadAsStringAsync();
@@ -309,7 +309,7 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<HttpResponseMessage> GetUserInformation(AccountToken aToken, UInt64 Id)
         {
-            return await OAuthAsync(
+            return await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
                 "https://api.twitter.com/1/users/show.json",
                 new TwitterRequest(
@@ -317,14 +317,14 @@ namespace NemoKachi.TwitterWrapper
                     new TwitterRequest.QueryKeyValue("user_id", Id.ToString(), TwitterRequest.RequestType.Type2)), null);//new RefreshQuery() { include_entities = true, include_rts = true }
         }
 
-        public async Task<HttpResponseMessage> GetUserProfileImage(String ScreenName)
+        public async Task<HttpResponseMessage> GetUserProfileImage(AccountToken aToken, String ScreenName)
         {
-            return await NonAuthStream(
-                HttpMethod.Get,
+            return await OAuthRequestAsync(
+                aToken, HttpMethod.Get,
                 "https://api.twitter.com/1/users/profile_image",
                 new TwitterRequest(
                     new TwitterRequest.QueryKeyValue("screen_name", ScreenName, TwitterRequest.RequestType.Type2),
-                    new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)));//new RefreshQuery() { include_entities = true, include_rts = true }
+                    new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)), null);//new RefreshQuery() { include_entities = true, include_rts = true }
         }
 
         //public async Task<HttpResponseMessage> MentionRefresh(String lastId)
@@ -638,33 +638,9 @@ namespace NemoKachi.TwitterWrapper
         //    }
         //}
 
-        public async Task<HttpResponseMessage> NonAuthStream(HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest)
-        {
-            {
-                String querytotal = twRequest.GetQueryStringTotal();
-                if (querytotal != "")
-                {
-                    baseUrl += '?' + querytotal;
-                }
-            }
+        
 
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl);
-            {
-                String postquery = twRequest.GetPostQueryString();
-                if (postquery != "")
-                {
-                    httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
-                }
-            }
-
-            httpRequestMessage.Headers.UserAgent.Add(UserAgent);
-            using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false }))//{ Timeout = new TimeSpan(0, 0, 10) }
-            {
-                return await httpClientTemp.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
-            }
-        }
-
-        public async Task<HttpResponseMessage> OAuthAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, String callbackUri)
+        public async Task<HttpResponseMessage> OAuthRequestAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, String callbackUri)
         {
             const String oauth_version = "1.0";
             const String oauth_signature_method = "HMAC-SHA1";
@@ -768,7 +744,7 @@ namespace NemoKachi.TwitterWrapper
 
             httpRequestMessage.Headers.Add("Authorization", authHeader);
             httpRequestMessage.Headers.UserAgent.Add(UserAgent);
-            using (HttpClient httpClientTemp = new HttpClient())//{ Timeout = new TimeSpan(0, 0, 10) }
+            using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false }))//{ Timeout = new TimeSpan(0, 0, 10) }
             {
                 return await httpClientTemp.SendAsync(httpRequestMessage);
             }
