@@ -101,7 +101,7 @@ namespace NemoKachi
             {
                 TwitterWrapper.TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient;
 
-                twt = await MainClient.ShowTweetAsync(aToken, new ShowTweetRequest(), Id);
+                twt = await MainClient.StatusShowAsync(aToken, new StatusShowRequest(), Id, new GetStatusRequest());
                 StoreTweets(twt);
                 return twt;
             }

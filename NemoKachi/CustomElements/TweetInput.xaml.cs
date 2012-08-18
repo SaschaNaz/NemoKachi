@@ -61,15 +61,15 @@ namespace NemoKachi.CustomElements
 
             String sendText;
             SendTextBox.Document.GetText(Windows.UI.Text.TextGetOptions.None, out sendText);
-            TwitterWrapper.SendTweetRequest tweetrequest = new TwitterWrapper.SendTweetRequest()
+            TwitterWrapper.StatusUpdateRequest tweetrequest = new TwitterWrapper.StatusUpdateRequest()
                 {
                     status = sendText
                 };
             if (ReplyTweet != null)
                 tweetrequest.in_reply_to_status_id = ReplyTweet.Id;
-            TwitterWrapper.TwitterDatas.Tweet twt = await MainClient.SendTweetAsync(
+            TwitterWrapper.TwitterDatas.Tweet twt = await MainClient.StatusUpdateAsync(
                 collector.TokenCollection[0],
-                tweetrequest);
+                tweetrequest, new TwitterWrapper.GetStatusRequest());
             house.StoreTweets(twt);
         }
     }

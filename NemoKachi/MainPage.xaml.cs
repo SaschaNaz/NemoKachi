@@ -133,7 +133,7 @@ namespace NemoKachi
                     String resultId = (String)(await dialog.ShowAsync()).Id;
                     if (resultId == "Yes")
                     {
-                        await MainClient.RetweetAsync(collector.TokenCollection[0], new RetweetRequest(), targetTweet.Id);
+                        await MainClient.StatusRetweetAsync(collector.TokenCollection[0], targetTweet.Id, null);
                         await new Windows.UI.Popups.MessageDialog("Retweet Succeed").ShowAsync();
                     }
                 }
@@ -167,7 +167,7 @@ namespace NemoKachi
                     String resultId = (String)(await dialog.ShowAsync()).Id;
                     if (resultId == "Yes")
                     {
-                        await MainClient.RetweetAsync(collector.TokenCollection[0], new RetweetRequest(), targetTweet.Id);
+                        await MainClient.StatusDestroyAsync(collector.TokenCollection[0], targetTweet.Id, null);
                         await new Windows.UI.Popups.MessageDialog("Destroy Succeed").ShowAsync();
                     }
                 }
@@ -200,7 +200,7 @@ namespace NemoKachi
                     String resultId = (String)(await dialog.ShowAsync()).Id;
                     if (resultId == "Yes")
                     {
-                        await MainClient.FavoriteCreateAsync(collector.TokenCollection[0], new FavoriteRequest(), targetTweet.Id);
+                        await MainClient.FavoriteCreateAsync(collector.TokenCollection[0], targetTweet.Id, null);
                         await new Windows.UI.Popups.MessageDialog("Favorite Succeed").ShowAsync();
                     }
                 }
@@ -233,7 +233,7 @@ namespace NemoKachi
                     String resultId = (String)(await dialog.ShowAsync()).Id;
                     if (resultId == "Yes")
                     {
-                        await MainClient.FavoriteDestroyAsync(collector.TokenCollection[0], new FavoriteRequest(), targetTweet.Id);
+                        await MainClient.FavoriteDestroyAsync(collector.TokenCollection[0], targetTweet.Id, null);
                         await new Windows.UI.Popups.MessageDialog("Unfavorite Succeed").ShowAsync();
                     }
                 }
