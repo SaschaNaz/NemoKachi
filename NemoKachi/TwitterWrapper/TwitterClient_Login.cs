@@ -138,7 +138,7 @@ namespace NemoKachi.TwitterWrapper
                 AccountToken Token = new AccountToken();
                 //"Recieving OAuth callback...";
                 Vis.Phase = LoginPhase.WaitingOAuthCallback;
-                using (HttpResponseMessage response = await Client.OAuthAsync(
+                using (HttpResponseMessage response = await Client.OAuthRequestAsync(
                     Token,
                     HttpMethod.Post,
                     "https://api.twitter.com/oauth/request_token",
@@ -216,7 +216,7 @@ namespace NemoKachi.TwitterWrapper
                 try
                 {
                     Token.oauth_token = webparams["oauth_token"];
-                    using (HttpResponseMessage response = await Client.OAuthAsync(Token, HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
+                    using (HttpResponseMessage response = await Client.OAuthRequestAsync(Token, HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
                         new TwitterRequest(new TwitterRequest.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterRequest.RequestType.Post)), null))
                     {
 
@@ -233,7 +233,7 @@ namespace NemoKachi.TwitterWrapper
 
                             //"Accessing your account image...";
                             Vis.Phase = LoginPhase.GettingAccountImageURI;
-                            using (HttpResponseMessage userresponse = await Client.GetUserProfileImage(Token.AccountName))
+                            using (HttpResponseMessage userresponse = await Client.GetUserProfileImage(Token, Token.AccountName))
                             {
                                 if (userresponse.StatusCode == System.Net.HttpStatusCode.Redirect)
                                 {
