@@ -376,7 +376,7 @@ namespace NemoKachi.TwitterWrapper
         {
             return await OAuthSocket(
                 aToken, HttpMethod.Get,
-                url, requestQuery);//new RefreshQuery() { include_entities = true, include_rts = true }
+                url, requestQuery);//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
         }
 
         public async Task<HttpResponseMessage> GetUserInformation(AccountToken aToken, UInt64 Id)
@@ -385,8 +385,8 @@ namespace NemoKachi.TwitterWrapper
                 aToken, HttpMethod.Get,
                 "https://api.twitter.com/1/users/show.json",
                 new TwitterRequest(
-                    new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
-                    new TwitterRequest.QueryKeyValue("user_id", Id.ToString(), TwitterRequest.RequestType.Type2)), null, HttpCompletionOption.ResponseContentRead);//new RefreshQuery() { include_entities = true, include_rts = true }
+                    new TwitterRequest.QueryKeyValue("include_TwitterEntities", "true", TwitterRequest.RequestType.Type1),
+                    new TwitterRequest.QueryKeyValue("user_id", Id.ToString(), TwitterRequest.RequestType.Type2)), null, HttpCompletionOption.ResponseContentRead);//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
         }
 
         public async Task<HttpResponseMessage> GetUserProfileImage(AccountToken aToken, String ScreenName)
@@ -396,14 +396,14 @@ namespace NemoKachi.TwitterWrapper
                 "https://api.twitter.com/1/users/profile_image",
                 new TwitterRequest(
                     new TwitterRequest.QueryKeyValue("screen_name", ScreenName, TwitterRequest.RequestType.Type2),
-                    new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)), null, HttpCompletionOption.ResponseContentRead);//new RefreshQuery() { include_entities = true, include_rts = true }
+                    new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)), null, HttpCompletionOption.ResponseContentRead);//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
         }
 
         //public async Task<HttpResponseMessage> MentionRefresh(String lastId)
         //{
         //    SortedDictionary<String, String> querys = new SortedDictionary<String, String>()
         //    {
-        //        { "include_entities", "true" },
+        //        { "include_TwitterEntities", "true" },
         //        { "include_rts", "true" }
         //    };
         //    if (lastId != "")

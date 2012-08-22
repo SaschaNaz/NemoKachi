@@ -95,7 +95,7 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
 
         public TwitterUser User { get; private set; }
         public Tweet RetweetedStatus { get; private set; }
-        public Entities AttachedEntities { get; private set; }
+        public TwitterEntities AttachedEntities { get; private set; }
         public String Text { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public UInt64 Id { get; private set; }
@@ -112,7 +112,7 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
                     RetweetedStatus = new Tweet(value.GetObject());
                 }
             }
-            AttachedEntities = new Entities(jo.GetNamedObject("entities"));
+            AttachedEntities = new TwitterEntities(jo.GetNamedObject("entities"));
             Text = Uri.UnescapeDataString(jo.GetNamedString("text"));
             CreatedAt = TwitterClient.ConvertToDateTime(jo.GetNamedString("created_at"));
             Id = Convert.ToUInt64(jo.GetNamedString("id_str"));
@@ -137,9 +137,9 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         //    catch { return null; }
         //}
 
-        //public Entities GetEntities()
+        //public TwitterEntities GetTwitterEntities()
         //{
-        //    return new Entities(JsonData.GetNamedObject("entities"));
+        //    return new TwitterEntities(JsonData.GetNamedObject("TwitterEntities"));
         //}
 
         //public String GetText()
@@ -202,14 +202,14 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         //    }
         //}
 
-        public struct Entities //https://dev.twitter.com/docs/tweet-entities
+        public struct TwitterEntities //https://dev.twitter.com/docs/tweet-TwitterEntities
         {
             public readonly Hashtag[] Hashtags;
             public readonly UserMention[] UserMentions;
             public readonly Url[] Urls;
             public readonly TweetMedia[] Media;
 
-            public Entities(JsonObject jsob)
+            public TwitterEntities(JsonObject jsob)
             {
                 JsonArray jary = jsob.GetNamedArray("hashtags");
                 Hashtags = new Hashtag[jary.Count];
