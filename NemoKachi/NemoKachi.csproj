@@ -137,6 +137,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TwitterWrapper\TwitterCards.cs" />
     <Compile Include="TwitterWrapper\TwitterClient.cs" />
     <Compile Include="TwitterWrapper\TwitterClient_Login.cs" />
     <Compile Include="TwitterWrapper\TwitterClient_Queries.cs" />

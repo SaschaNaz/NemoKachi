@@ -56,7 +56,7 @@ namespace NemoKachi.TwitterWrapper
     //        return TwitterRequest.MakeRequest(
     //            new TwitterRequest.QueryKeyValue[]
     //            {
-    //                new TwitterRequest.QueryKeyValue("include_TwitterEntities", "true", TwitterRequest.RequestType.Type1),
+    //                new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
     //                new TwitterRequest.QueryKeyValue("include_rts", "true", TwitterRequest.RequestType.Type1)
     //            });
     //    }
@@ -85,7 +85,7 @@ namespace NemoKachi.TwitterWrapper
     //        return TwitterRequest.MakeQuery(
     //            new TwitterRequest.QueryKeyValue[]
     //            {
-    //                new TwitterRequest.QueryKeyValue("include_TwitterEntities", "true", TwitterRequest.RequestType.Type1),
+    //                new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
     //                new TwitterRequest.QueryKeyValue("include_rts", "true", TwitterRequest.RequestType.Type1)
     //            });
     //    }
@@ -168,11 +168,11 @@ namespace NemoKachi.TwitterWrapper
 
         public void MergeGetStatusRequest(GetStatusRequest getstatus)
         {
-            if (getstatus.include_TwitterEntities)
+            if (getstatus.include_entities)
             {
                 AddValues(
                        new TwitterRequest.QueryKeyValue(
-                           "include_TwitterEntities",
+                           "include_entities",
                            "true",
                            TwitterRequest.RequestType.Type1));
             }
@@ -238,7 +238,7 @@ namespace NemoKachi.TwitterWrapper
 
     public class GetStatusRequest
     {
-        public Boolean include_TwitterEntities = true;
+        public Boolean include_entities = true;
         public Boolean trim_user;
     }
 
@@ -340,7 +340,7 @@ namespace NemoKachi.TwitterWrapper
     //public class StatusRetweetRequest
     //{
     //    //queries type 1
-    //    public Boolean include_TwitterEntities = true;
+    //    public Boolean include_entities = true;
 
     //    //queries type 2
     //    public Boolean trim_user = false;
@@ -349,11 +349,11 @@ namespace NemoKachi.TwitterWrapper
     //    {
     //        List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
     //        #region querys type 1
-    //        if (r.include_TwitterEntities)
+    //        if (r.include_entities)
     //        {
     //            paramList.Add(
     //                   new TwitterRequest.QueryKeyValue(
-    //                       "include_TwitterEntities",
+    //                       "include_entities",
     //                       "true",
     //                       TwitterRequest.RequestType.Type1));
     //        }
@@ -376,7 +376,7 @@ namespace NemoKachi.TwitterWrapper
     //public class StatusDestroyRequest
     //{
     //    //queries type 1
-    //    public Boolean include_TwitterEntities = true;
+    //    public Boolean include_entities = true;
 
     //    //queries type 2
     //    public Boolean trim_user = false;
@@ -385,11 +385,11 @@ namespace NemoKachi.TwitterWrapper
     //    {
     //        List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
     //        #region querys type 1
-    //        if (r.include_TwitterEntities)
+    //        if (r.include_entities)
     //        {
     //            paramList.Add(
     //                   new TwitterRequest.QueryKeyValue(
-    //                       "include_TwitterEntities",
+    //                       "include_entities",
     //                       "true",
     //                       TwitterRequest.RequestType.Type1));
     //        }
@@ -412,17 +412,17 @@ namespace NemoKachi.TwitterWrapper
     //public class FavoriteRequest
     //{
     //    //queries type 1
-    //    public Boolean include_TwitterEntities = true;
+    //    public Boolean include_entities = true;
 
     //    public static implicit operator TwitterRequest(FavoriteRequest r)
     //    {
     //        List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
     //        #region querys type 1
-    //        if (r.include_TwitterEntities)
+    //        if (r.include_entities)
     //        {
     //            paramList.Add(
     //                   new TwitterRequest.QueryKeyValue(
-    //                       "include_TwitterEntities",
+    //                       "include_entities",
     //                       "true",
     //                       TwitterRequest.RequestType.Type1));
     //        }
@@ -484,7 +484,7 @@ namespace NemoKachi.TwitterWrapper
     public class LocalRefreshRequest
     {
         //queries type 1
-        public Boolean include_TwitterEntities = true;
+        public Boolean include_entities = true;
         public Boolean include_rts = true;
         public Nullable<UInt64> max_id;
 
@@ -495,11 +495,11 @@ namespace NemoKachi.TwitterWrapper
         {
             List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
             #region querys type 1
-            if (r.include_TwitterEntities)
+            if (r.include_entities)
             {
                 paramList.Add(
                        new TwitterRequest.QueryKeyValue(
-                           "include_TwitterEntities",
+                           "include_entities",
                            "true",
                            TwitterRequest.RequestType.Type1));
             }
@@ -538,7 +538,7 @@ namespace NemoKachi.TwitterWrapper
     public class SpecificUserRefreshRequest
     {
         //queries type 1
-        public Boolean include_TwitterEntities = true;
+        public Boolean include_entities = true;
         public Boolean include_rts = true;
         public Nullable<UInt64> max_id;
 
@@ -550,11 +550,11 @@ namespace NemoKachi.TwitterWrapper
         {
             List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
             #region querys type 1
-            if (r.include_TwitterEntities)
+            if (r.include_entities)
             {
                 paramList.Add(
                        new TwitterRequest.QueryKeyValue(
-                           "include_TwitterEntities",
+                           "include_entities",
                            "true",
                            TwitterRequest.RequestType.Type1));
             }
@@ -730,7 +730,7 @@ namespace NemoKachi.TwitterWrapper
     //            twitterUrl = "https://api.twitter.com/1/statuses/home_timeline.json",
     //            queries = new RefreshQuery()
     //            {
-    //                include_TwitterEntities = true,
+    //                include_entities = true,
     //                include_rts = true,
     //            }
     //        };
@@ -745,7 +745,7 @@ namespace NemoKachi.TwitterWrapper
     //            twitterUrl = "https://api.twitter.com/1/statuses/mentions.json",
     //            queries = new RefreshQuery()
     //            {
-    //                include_TwitterEntities = true,
+    //                include_entities = true,
     //                include_rts = true,
     //            }
     //        };
@@ -758,13 +758,13 @@ namespace NemoKachi.TwitterWrapper
     //        twitterUrl = "http://api.twitter.com/1/statuses/user_timeline.json",
     //        queries = new RefreshQuery()
     //        {
-    //            include_TwitterEntities = true,
+    //            include_entities = true,
     //            include_rts = true,
     //            screen_name = screen_name
     //        }
     //        //new SortedDictionary<String, String>()
     //        //{
-    //        //    { "include_TwitterEntities", "true" },
+    //        //    { "include_entities", "true" },
     //        //    { "include_rts", "true" },
     //        //    { "screen_name", screen_name } 
     //        //}
