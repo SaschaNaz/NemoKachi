@@ -246,6 +246,37 @@ namespace NemoKachi
                 await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
         }
 
+        private async void GetCardTemporary(object sender, RoutedEventArgs e)
+        {
+            String message = null;
+            try
+            {
+                String inputText = cardBox.Text;
+                if (inputText != "")
+                {
+                    Windows.UI.Popups.MessageDialog dialog =
+                        new Windows.UI.Popups.MessageDialog(
+                            String.Format("Do you really want to get the Twitter Card of this url?\r\n"
+                                            + "As it is not an official but a custom implement of Twitter Card, it normally consumes data heavily and responses late.\r\n" + "{0}", inputText));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Get the card", null, "Yes"));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel", null, "No"));
+                    dialog.CancelCommandIndex = 1;
+                    String resultId = (String)(await dialog.ShowAsync()).Id;
+                    if (resultId == "Yes")
+                    {
+                        TwitterCards.ITwitterCard card = await TwitterCards.TwitterCard.DownloadCardAsync(new Uri(inputText));
+                        await new Windows.UI.Popups.MessageDialog("Twitter Card Get Succeed").ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+        }
+
         //private void TweetIDRecieved(object sender, RoutedEventArgs e)
         //{
         //    Windows.Storage.ApplicationDataContainer localSettings =
