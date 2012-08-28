@@ -233,19 +233,20 @@ namespace NemoKachi.TwitterWrapper
 
                             //"Accessing your account image...";
                             Vis.Phase = LoginPhase.GettingAccountImageURI;
-                            using (HttpResponseMessage userresponse = await Client.GetUserProfileImage(Token, Token.AccountName))
-                            {
-                                if (userresponse.StatusCode == System.Net.HttpStatusCode.Redirect)
-                                {
-                                    //"Loading your account image...";
-                                    Token.AccountImageUri = userresponse.Headers.Location;
-                                    //Vis.Progress = 5;
-                                }
-                                else
-                                {
-                                    //Vis.CurrentMessage = userresponse.ReasonPhrase;
-                                }
-                            }
+                            Token.AccountImageUri = await Client.UsersProfileimageAsync(Token, new UsersProfileimageRequest() { screen_name = Token.AccountName, size = ProfileimageSize.bigger });
+                            //using (HttpResponseMessage userresponse = await Client.GetUserProfileImage(Token, Token.AccountName))
+                            //{
+                            //    if (userresponse.StatusCode == System.Net.HttpStatusCode.Redirect)
+                            //    {
+                            //        //"Loading your account image...";
+                            //        Token.AccountImageUri = userresponse.Headers.Location;
+                            //        //Vis.Progress = 5;
+                            //    }
+                            //    else
+                            //    {
+                            //        //Vis.CurrentMessage = userresponse.ReasonPhrase;
+                            //    }
+                            //}
                         }
                         else
                         {

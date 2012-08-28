@@ -161,12 +161,18 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
+
+        public async Task<Tweet> StatusesUpdateAsync(AccountToken aToken, StatusesUpdateRequest tweetQuery)
+        {
+            return await StatusesUpdateAsync(aToken, tweetQuery, null);
+        }
+
         /// <summary>
         /// 일반 트윗, 또는 멘션 등의 트윗을 보냅니다.
         /// </summary>
         /// <param name="status">트윗에 넣을 텍스트입니다</param>
         /// <returns>리퀘스트에 대한 HTTP Response 메시지를 반환합니다</returns>
-        public async Task<Tweet> StatusUpdateAsync(AccountToken aToken, StatusUpdateRequest tweetQuery, GetStatusRequest getstatus)
+        public async Task<Tweet> StatusesUpdateAsync(AccountToken aToken, StatusesUpdateRequest tweetQuery, GetStatusRequest getstatus)
         {
             TwitterRequest twtRequest = tweetQuery;
             HttpCompletionOption completionOption;
@@ -198,15 +204,20 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<Tweet> StatusShowAsync(AccountToken aToken, StatusShowRequest tweetQuery, UInt64 Id, GetStatusRequest getstatus)
+        public async Task<Tweet> StatusesShowAsync(AccountToken aToken, StatusesShowRequest tweetQuery, UInt64 Id)
+        {
+            return await StatusesShowAsync(aToken, tweetQuery, Id, null);
+        }
+
+        public async Task<Tweet> StatusesShowAsync(AccountToken aToken, StatusesShowRequest tweetQuery, UInt64 Id, GetStatusRequest getstatus)
         {
             TwitterRequest twtRequest = tweetQuery;
             if (getstatus == null)
-                throw new Exception("StatusShowAsync needs valid GetStatusRequest parameter.");
+                throw new Exception("StatusesShowAsync needs valid GetStatusRequest parameter.");
             twtRequest.MergeGetStatusRequest(getstatus);
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
-                String.Format("https://api.twitter.com/1/statuses/show/{0}.json", Id), twtRequest, null, HttpCompletionOption.ResponseContentRead))
+                String.Format("https://api.twitter.com/1/statuses/show/{0}.json", Id), twtRequest))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -222,7 +233,12 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<Tweet> StatusRetweetAsync(AccountToken aToken, UInt64 Id, GetStatusRequest getstatus)
+        public async Task<Tweet> StatusesRetweetAsync(AccountToken aToken, UInt64 Id)
+        {
+            return await StatusesRetweetAsync(aToken, Id, null);
+        }
+
+        public async Task<Tweet> StatusesRetweetAsync(AccountToken aToken, UInt64 Id, GetStatusRequest getstatus)
         {
             TwitterRequest twtRequest = new TwitterRequest();
             HttpCompletionOption completionOption;
@@ -235,7 +251,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", Id), twtRequest, null, completionOption))
+                String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", Id), twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -254,7 +270,12 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<Tweet> StatusDestroyAsync(AccountToken aToken, UInt64 Id, GetStatusRequest getstatus)
+        public async Task<Tweet> StatusesDestroyAsync(AccountToken aToken, UInt64 Id)
+        {
+            return await StatusesDestroyAsync(aToken, Id, null);
+        }
+
+        public async Task<Tweet> StatusesDestroyAsync(AccountToken aToken, UInt64 Id, GetStatusRequest getstatus)
         {
             TwitterRequest twtRequest = new TwitterRequest();
             HttpCompletionOption completionOption;
@@ -267,7 +288,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", Id), twtRequest, null, completionOption))
+                String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", Id), twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -284,6 +305,11 @@ namespace NemoKachi.TwitterWrapper
                     throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
                 }
             }
+        }
+
+        public async Task<Tweet> FavoriteCreateAsync(AccountToken aToken, UInt64 Id)
+        {
+            return await FavoriteCreateAsync(aToken, Id, null);
         }
 
         public async Task<Tweet> FavoriteCreateAsync(AccountToken aToken, UInt64 Id, GetStatusRequest getstatus)
@@ -299,7 +325,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/favorites/create/{0}.json", Id), twtRequest, null, completionOption))
+                String.Format("https://api.twitter.com/1/favorites/create/{0}.json", Id), twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -318,6 +344,11 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
+        public async Task<Tweet> FavoriteDestroyAsync(AccountToken aToken, UInt64 Id)
+        {
+            return await FavoriteDestroyAsync(aToken, Id, null);
+        }
+
         public async Task<Tweet> FavoriteDestroyAsync(AccountToken aToken, UInt64 Id, GetStatusRequest getstatus)
         {
             TwitterRequest twtRequest = new TwitterRequest();
@@ -331,7 +362,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/favorites/destroy/{0}.json", Id), twtRequest, null, completionOption))
+                String.Format("https://api.twitter.com/1/favorites/destroy/{0}.json", Id), twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -359,7 +390,7 @@ namespace NemoKachi.TwitterWrapper
             List<Tweet> tweets = new List<Tweet>();
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
-                tlData.RestURI.OriginalString, tlData.GetRequest(), null, HttpCompletionOption.ResponseContentRead))
+                tlData.RestURI.OriginalString, tlData.GetRequest()))
             {
                 String str = await response.Content.ReadAsStringAsync();
                 System.Diagnostics.Debug.WriteLine(str);
@@ -372,32 +403,76 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<HttpResponseMessage> RefreshStream(AccountToken aToken, String url, TwitterRequest requestQuery)
+        //public async Task<HttpResponseMessage> RefreshStream(AccountToken aToken, String url, TwitterRequest requestQuery)
+        //{
+        //    return await OAuthSocket(
+        //        aToken, HttpMethod.Get,
+        //        url, requestQuery);//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
+        //}
+
+        public async Task<TwitterUser> UsersShowAsync(AccountToken aToken, UsersShowRequest tweetQuery, GetStatusRequest getstatus)
         {
-            return await OAuthSocket(
+            TwitterRequest twtRequest = tweetQuery;
+            if (getstatus == null)
+                throw new Exception("UsersShowAsync needs valid GetStatusRequest parameter.");
+            twtRequest.MergeGetStatusRequest(getstatus);
+            using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
-                url, requestQuery);//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
+                "https://api.twitter.com/1/users/show.json", twtRequest))
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    return new TwitterUser(JsonObject.Parse(await response.Content.ReadAsStringAsync()));
+                }
+                else
+                {
+                    String message = await response.Content.ReadAsStringAsync();
+
+                    System.Diagnostics.Debug.WriteLine(message);
+                    throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
+                }
+            }
         }
 
-        public async Task<HttpResponseMessage> GetUserInformation(AccountToken aToken, UInt64 Id)
+        public async Task<Uri> UsersProfileimageAsync(AccountToken aToken, UsersProfileimageRequest tweetQuery)
         {
-            return await OAuthRequestAsync(
+            using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
-                "https://api.twitter.com/1/users/show.json",
-                new TwitterRequest(
-                    new TwitterRequest.QueryKeyValue("include_TwitterEntities", "true", TwitterRequest.RequestType.Type1),
-                    new TwitterRequest.QueryKeyValue("user_id", Id.ToString(), TwitterRequest.RequestType.Type2)), null, HttpCompletionOption.ResponseContentRead);//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
+                String.Format("https://api.twitter.com/1/users/profile_image/{0}.json", tweetQuery.screen_name), tweetQuery))
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.Redirect)
+                {
+                    return response.Headers.Location;
+                }
+                else
+                {
+                    String message = await response.Content.ReadAsStringAsync();
+
+                    System.Diagnostics.Debug.WriteLine(message);
+                    throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
+                }
+            }
         }
 
-        public async Task<HttpResponseMessage> GetUserProfileImage(AccountToken aToken, String ScreenName)
-        {
-            return await OAuthRequestAsync(
-                aToken, HttpMethod.Get,
-                "https://api.twitter.com/1/users/profile_image",
-                new TwitterRequest(
-                    new TwitterRequest.QueryKeyValue("screen_name", ScreenName, TwitterRequest.RequestType.Type2),
-                    new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)), null, HttpCompletionOption.ResponseContentRead);//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
-        }
+        //public async Task<HttpResponseMessage> GetUserInformation(AccountToken aToken, UInt64 Id)
+        //{
+        //    return await OAuthRequestAsync(
+        //        aToken, HttpMethod.Get,
+        //        "https://api.twitter.com/1/users/show.json",
+        //        new TwitterRequest(
+        //            new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
+        //            new TwitterRequest.QueryKeyValue("user_id", Id.ToString(), TwitterRequest.RequestType.Type2)));//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
+        //}
+
+        //public async Task<HttpResponseMessage> GetUserProfileImage(AccountToken aToken, String ScreenName)
+        //{
+        //    return await OAuthRequestAsync(
+        //        aToken, HttpMethod.Get,
+        //        "https://api.twitter.com/1/users/profile_image",
+        //        new TwitterRequest(
+        //            new TwitterRequest.QueryKeyValue("screen_name", ScreenName, TwitterRequest.RequestType.Type2),
+        //            new TwitterRequest.QueryKeyValue("size", "bigger", TwitterRequest.RequestType.Type2)));//new RefreshQuery() { include_TwitterEntities = true, include_rts = true }
+        //}
 
         //public async Task<HttpResponseMessage> MentionRefresh(String lastId)
         //{
@@ -528,7 +603,20 @@ namespace NemoKachi.TwitterWrapper
         //    }
         //}
 
-        
+        public async Task<HttpResponseMessage> OAuthRequestAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest)
+        {
+            return await OAuthRequestAsync(aToken, reqMethod, baseUrl, twRequest, null, HttpCompletionOption.ResponseContentRead);
+        }
+
+        public async Task<HttpResponseMessage> OAuthRequestAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, String callbackUri)
+        {
+            return await OAuthRequestAsync(aToken, reqMethod, baseUrl, twRequest, callbackUri, HttpCompletionOption.ResponseContentRead);
+        }
+
+        public async Task<HttpResponseMessage> OAuthRequestAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, HttpCompletionOption completionOption)
+        {
+            return await OAuthRequestAsync(aToken, reqMethod, baseUrl, twRequest, null, completionOption);
+        }
 
         public async Task<HttpResponseMessage> OAuthRequestAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest, String callbackUri, HttpCompletionOption completionOption)
         {
@@ -640,141 +728,141 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public async Task<HttpResponseMessage> OAuthSocket(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest)
-        {
-            const String oauth_version = "1.0";
-            const String oauth_signature_method = "HMAC-SHA1";
-            String oauth_nonce = Convert.ToBase64String(new UTF8Encoding().GetBytes(DateTime.Now.Ticks.ToString()));
-            TimeSpan timeSpan = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            String oauth_timestamp = Convert.ToInt64(timeSpan.TotalSeconds).ToString();
+        //public async Task<HttpResponseMessage> OAuthSocket(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterRequest twRequest)
+        //{
+        //    const String oauth_version = "1.0";
+        //    const String oauth_signature_method = "HMAC-SHA1";
+        //    String oauth_nonce = Convert.ToBase64String(new UTF8Encoding().GetBytes(DateTime.Now.Ticks.ToString()));
+        //    TimeSpan timeSpan = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        //    String oauth_timestamp = Convert.ToInt64(timeSpan.TotalSeconds).ToString();
 
-            List<String> baseStringList = new List<String>();
-            baseStringList.Add("oauth_consumer_key=" + oauth_consumer_key);
-            baseStringList.Add("oauth_nonce=" + oauth_nonce);
-            baseStringList.Add("oauth_signature_method=" + oauth_signature_method);
-            baseStringList.Add("oauth_timestamp=" + oauth_timestamp);
-            if (aToken.oauth_token != null)
-            {
-                baseStringList.Add("oauth_token=" + aToken.oauth_token);
-            }
-            baseStringList.Add("oauth_version=" + oauth_version);
-
-
-            String baseString = String.Concat(reqMethod, "&", Uri.EscapeDataString(baseUrl));
-            {
-                String AddString = "";
-                {
-                    String query1 = twRequest.GetQueryStringPart1();
-                    if (query1 != "")
-                    {
-                        AddString += query1;
-                    }
-                }
-                if (AddString != "")
-                {
-                    AddString += '&';
-                }
-                AddString += String.Join("&", baseStringList);
-                {
-                    String postquery = twRequest.GetPostQueryString();
-                    if (postquery != "")
-                    {
-                        AddString += '&' + postquery;
-                    }
-                }
-                {
-                    String query2 = twRequest.GetQueryStringPart2();
-                    if (query2 != "")
-                    {
-                        AddString += '&' + query2;
-                    }
-                }
-                baseString += '&' + Uri.EscapeDataString(AddString);
-            }
-            System.Diagnostics.Debug.WriteLine(baseString);
-
-            String compositeKey = Uri.EscapeDataString(oauth_consumer_secret) + "&";
-            if (aToken.oauth_token_secret != null)
-            {
-                compositeKey += Uri.EscapeDataString(aToken.oauth_token_secret);
-            }
-
-            String oauth_signature = HMAC_SHA1Hasher(baseString, compositeKey);
-
-            List<String> headerStringList = new List<String>();
-            headerStringList.Add(String.Format("oauth_nonce=\"{0}\"", Uri.EscapeDataString(oauth_nonce)));
-            headerStringList.Add(String.Format("oauth_signature_method=\"{0}\"", Uri.EscapeDataString(oauth_signature_method)));
-            headerStringList.Add(String.Format("oauth_timestamp=\"{0}\"", Uri.EscapeDataString(oauth_timestamp)));
-            headerStringList.Add(String.Format("oauth_consumer_key=\"{0}\"", Uri.EscapeDataString(oauth_consumer_key)));
-            if (aToken.oauth_token != null)
-            {
-                headerStringList.Add("oauth_token" + String.Format("=\"{0}\"", Uri.EscapeDataString(aToken.oauth_token)));
-            }
-            headerStringList.Add(String.Format("oauth_signature=\"{0}\"", Uri.EscapeDataString(oauth_signature)));
-            headerStringList.Add(String.Format("oauth_version=\"{0}\"", Uri.EscapeDataString(oauth_version)));
-
-            String authHeader = "OAuth " + String.Join(", ", headerStringList);
-
-            System.Diagnostics.Debug.WriteLine(authHeader);
-
-            {
-                String querytotal = twRequest.GetQueryStringTotal();
-                if (querytotal != "")
-                {
-                    baseUrl += '?' + querytotal;
-                }
-            }
-
-            //Windows.Networking.Sockets.StreamSocket socket = new Windows.Networking.Sockets.StreamSocket();
-
-            //System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
-            //cts.CancelAfter(5000);
+        //    List<String> baseStringList = new List<String>();
+        //    baseStringList.Add("oauth_consumer_key=" + oauth_consumer_key);
+        //    baseStringList.Add("oauth_nonce=" + oauth_nonce);
+        //    baseStringList.Add("oauth_signature_method=" + oauth_signature_method);
+        //    baseStringList.Add("oauth_timestamp=" + oauth_timestamp);
+        //    if (aToken.oauth_token != null)
+        //    {
+        //        baseStringList.Add("oauth_token=" + aToken.oauth_token);
+        //    }
+        //    baseStringList.Add("oauth_version=" + oauth_version);
 
 
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl);
-            {
-                String postquery = twRequest.GetPostQueryString();
-                if (postquery != "")
-                {
-                    httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
-                }
-            }
+        //    String baseString = String.Concat(reqMethod, "&", Uri.EscapeDataString(baseUrl));
+        //    {
+        //        String AddString = "";
+        //        {
+        //            String query1 = twRequest.GetQueryStringPart1();
+        //            if (query1 != "")
+        //            {
+        //                AddString += query1;
+        //            }
+        //        }
+        //        if (AddString != "")
+        //        {
+        //            AddString += '&';
+        //        }
+        //        AddString += String.Join("&", baseStringList);
+        //        {
+        //            String postquery = twRequest.GetPostQueryString();
+        //            if (postquery != "")
+        //            {
+        //                AddString += '&' + postquery;
+        //            }
+        //        }
+        //        {
+        //            String query2 = twRequest.GetQueryStringPart2();
+        //            if (query2 != "")
+        //            {
+        //                AddString += '&' + query2;
+        //            }
+        //        }
+        //        baseString += '&' + Uri.EscapeDataString(AddString);
+        //    }
+        //    System.Diagnostics.Debug.WriteLine(baseString);
 
-            httpRequestMessage.Headers.Add("Authorization", authHeader);
-            httpRequestMessage.Headers.UserAgent.Add(UserAgent);
-            using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip }) { Timeout = new TimeSpan(0, 0, 5) })
-            {
-                while (true)
-                {
-                    HttpResponseMessage response = null;
-                    try
-                    {
-                        response = await httpClientTemp.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
-                    }
-                    catch (TimeoutException)
-                    {
-                        Int32 Timeout = httpClientTemp.Timeout.Seconds * 2;
-                        if (Timeout < 270)
-                        {
-                            if (Timeout < 30)
-                            {
-                                httpClientTemp.Timeout = new TimeSpan(0, 0, 30);
-                            }
-                            else
-                            {
-                                httpClientTemp.Timeout = new TimeSpan(0, 0, httpClientTemp.Timeout.Seconds * 2);
-                            }
-                        }
-                        else
-                        {
-                            httpClientTemp.Timeout = new TimeSpan(0, 4, 30);
-                        }
-                    }
-                    //(await response.Content.ReadAsStreamAsync()).ReadTimeout = 90000;
-                    return response;
-                }
-            }
-        }
+        //    String compositeKey = Uri.EscapeDataString(oauth_consumer_secret) + "&";
+        //    if (aToken.oauth_token_secret != null)
+        //    {
+        //        compositeKey += Uri.EscapeDataString(aToken.oauth_token_secret);
+        //    }
+
+        //    String oauth_signature = HMAC_SHA1Hasher(baseString, compositeKey);
+
+        //    List<String> headerStringList = new List<String>();
+        //    headerStringList.Add(String.Format("oauth_nonce=\"{0}\"", Uri.EscapeDataString(oauth_nonce)));
+        //    headerStringList.Add(String.Format("oauth_signature_method=\"{0}\"", Uri.EscapeDataString(oauth_signature_method)));
+        //    headerStringList.Add(String.Format("oauth_timestamp=\"{0}\"", Uri.EscapeDataString(oauth_timestamp)));
+        //    headerStringList.Add(String.Format("oauth_consumer_key=\"{0}\"", Uri.EscapeDataString(oauth_consumer_key)));
+        //    if (aToken.oauth_token != null)
+        //    {
+        //        headerStringList.Add("oauth_token" + String.Format("=\"{0}\"", Uri.EscapeDataString(aToken.oauth_token)));
+        //    }
+        //    headerStringList.Add(String.Format("oauth_signature=\"{0}\"", Uri.EscapeDataString(oauth_signature)));
+        //    headerStringList.Add(String.Format("oauth_version=\"{0}\"", Uri.EscapeDataString(oauth_version)));
+
+        //    String authHeader = "OAuth " + String.Join(", ", headerStringList);
+
+        //    System.Diagnostics.Debug.WriteLine(authHeader);
+
+        //    {
+        //        String querytotal = twRequest.GetQueryStringTotal();
+        //        if (querytotal != "")
+        //        {
+        //            baseUrl += '?' + querytotal;
+        //        }
+        //    }
+
+        //    //Windows.Networking.Sockets.StreamSocket socket = new Windows.Networking.Sockets.StreamSocket();
+
+        //    //System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
+        //    //cts.CancelAfter(5000);
+
+
+        //    HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl);
+        //    {
+        //        String postquery = twRequest.GetPostQueryString();
+        //        if (postquery != "")
+        //        {
+        //            httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
+        //        }
+        //    }
+
+        //    httpRequestMessage.Headers.Add("Authorization", authHeader);
+        //    httpRequestMessage.Headers.UserAgent.Add(UserAgent);
+        //    using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip }) { Timeout = new TimeSpan(0, 0, 5) })
+        //    {
+        //        while (true)
+        //        {
+        //            HttpResponseMessage response = null;
+        //            try
+        //            {
+        //                response = await httpClientTemp.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+        //            }
+        //            catch (TimeoutException)
+        //            {
+        //                Int32 Timeout = httpClientTemp.Timeout.Seconds * 2;
+        //                if (Timeout < 270)
+        //                {
+        //                    if (Timeout < 30)
+        //                    {
+        //                        httpClientTemp.Timeout = new TimeSpan(0, 0, 30);
+        //                    }
+        //                    else
+        //                    {
+        //                        httpClientTemp.Timeout = new TimeSpan(0, 0, httpClientTemp.Timeout.Seconds * 2);
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    httpClientTemp.Timeout = new TimeSpan(0, 4, 30);
+        //                }
+        //            }
+        //            //(await response.Content.ReadAsStreamAsync()).ReadTimeout = 90000;
+        //            return response;
+        //        }
+        //    }
+        //}
 
         //public enum UserStreamingState
         //{

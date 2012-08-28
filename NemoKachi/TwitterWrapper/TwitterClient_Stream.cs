@@ -11,6 +11,7 @@ namespace NemoKachi.TwitterWrapper
 {
     public partial class TwitterClient
     {
+
         //public static void AddStreamedData(List<ITwitterViewer> Viewers, Tweet twt)//ITwitterData 중에서도 스트림에 추가되는 게 있고 영 안 되는 게 있는데 그건 어떻게 구분하지. 는 그냥 없애고 다 따로 만듦.
         //{
         //    foreach (ITwitterViewer Viewer in Viewers)
@@ -150,114 +151,47 @@ namespace NemoKachi.TwitterWrapper
         //        }
         //    }
 
-        //    public async Task ActivateAsync(AccountToken aToken)//ActivateAsync 불러오는 메소드에서 TimeoutException 받으면 다시 액티베이팅하게 만들기
+        //public async Task RecieveTweetStreamAsync(AccountToken aToken)
+        //{
+        //    if (IsActivated)
         //    {
-        //        if (IsActivated)
+        //        throw new ActivatedException("This streamer already has activated.");
+        //    }
+        //    IsActivated = true;
+        //    StreamState = UserStreamingState.Connecting;
+        //    try
+        //    {
+        //        response = await ColumnQuery.Client.RefreshStream(aToken, ColumnQuery.StreamUrl.AbsoluteUri, ColumnQuery.GetRequestQuery());
+        //        if (response.StatusCode == System.Net.HttpStatusCode.OK)
         //        {
-        //            throw new ActivatedException("This streamer already has activated.");
+        //            StreamState = UserStreamingState.Streaming;
         //        }
-        //        IsActivated = true;
-        //        //StreamState = UserStreamingState.Connecting;
-        //        try
+        //        else
         //        {
-        //            response = await ColumnQuery.Client.RefreshStream(aToken, ColumnQuery.StreamUrl.AbsoluteUri, ColumnQuery.GetRequestQuery());
-        //            //if (response.StatusCode == System.Net.HttpStatusCode.OK)
-        //            //{
-        //            //    StreamState = UserStreamingState.Streaming;
-        //            //}
-        //            //else
-        //            //{
-        //            //    StreamState = UserStreamingState.None;
-        //            //}
+        //            StreamState = UserStreamingState.None;
         //        }
-        //        catch (Exception ex)
-        //        {
-        //            //StreamState = UserStreamingState.None;
-        //            //IsActivated = false;
-        //            throw ex;
-        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        StreamState = UserStreamingState.None;
+        //        IsActivated = false;
+        //        throw ex;
+        //    }
 
-        //        //response.Content.ContentReadStream.ReadTimeout = 10;
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Started", Content = "Userstream is started successfully", TextColor = Windows.UI.Colors.Green });
-        //            List<Char> list = new List<Char>();
-        //            System.IO.Stream stream = await response.Content.ReadAsStreamAsync();
-        //            stream.ReadTimeout = 90000;
+        //    response.Content.ContentReadStream.ReadTimeout = 10;
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Started", Content = "Userstream is started successfully", TextColor = Windows.UI.Colors.Green });
+        //        List<Char> list = new List<Char>();
+        //        System.IO.Stream stream = await response.Content.ReadAsStreamAsync();
+        //        stream.ReadTimeout = 90000;
 
-        //            {//recieving user IDs - 나중에 아래것과 통합할까..
-        //                {
-        //                    Boolean IsStopped = false;
-        //                    //while (!streader.EndOfStream)
-        //                    //    textBlock1.Text += Convert.ToChar(streader.Read());
-        //                    while (!IsStopped)
-        //                    {
-        //                        Byte[] buffer = new Byte[1000];
-        //                        try
-        //                        {
-        //                            await stream.ReadAsync(buffer, 0, 1000);
-        //                        }
-        //                        //catch (System.Net.WebException)
-        //                        //{
-        //                        //    AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Stopped", Content = "Userstream is stopped by user", TextColor = Windows.UI.Xaml.Media.Colors.Green });
-        //                        //    return;
-        //                        //}
-        //                        catch (System.IO.IOException)
-        //                        {
-        //                            AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Stopped", Content = "Userstream is stopped by an accidental disconnection from server", TextColor = Windows.UI.Colors.Red });
-        //                            return;
-        //                        }
-        //                        foreach (Byte b in buffer)
-        //                        {
-        //                            Char ch = Convert.ToChar(b);
-        //                            switch (ch)
-        //                            {
-        //                                case '\r':
-        //                                    {
-        //                                        if (list.Count > 0 && IsStopped != true)
-        //                                        {
-        //                                            IsStopped = true;
-        //                                            //textBlock1.Text = new String(list.ToArray());
-        //                                            JsonObject json = JsonObject.Parse(new String(list.ToArray()));
-        //                                            //try
-        //                                            //{
-        //                                            //    json.Parse(new String(list.ToArray()));
-        //                                            //}
-        //                                            //catch (Exception ex)
-        //                                            //{
-        //                                            //    //textBlock1.Text += "UserStream: ERROR Ocurred";
-        //                                            //    AddStreamedData(TimelineViews, new TextEvent() { Title = "Error", Content = "UserStream: Loading Failed, stream stopped." + Environment.NewLine + "Message: " + ex.Message, TextColor = Windows.UI.Xaml.Media.Colors.Red });
-        //                                            //}
-        //                                            list.Clear();
-
-        //                                            JsonArray jary = json.GetNamedArray("friends");
-        //                                            Followings = new UInt64[jary.Count];
-        //                                            for (Int32 i = 0; i < jary.Count; i++)
-        //                                            {
-        //                                                Followings[i] = (UInt64)jary[i].GetNumber();
-        //                                            }
-        //                                        }
-        //                                        break;
-        //                                    }
-        //                                case '\n':
-        //                                case '\0':
-        //                                    {
-        //                                        break;
-        //                                    }
-        //                                default:
-        //                                    {
-        //                                        list.Add(ch);
-        //                                        break;
-        //                                    }
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-
-        //            try
-        //            {//recieving tweet stream
-        //                while (true)
+        //        {//recieving user IDs - 나중에 아래것과 통합할까..
+        //            {
+        //                Boolean IsStopped = false;
+        //                while (!streader.EndOfStream)
+        //                    textBlock1.Text += Convert.ToChar(streader.Read());
+        //                while (!IsStopped)
         //                {
         //                    Byte[] buffer = new Byte[1000];
         //                    try
@@ -266,7 +200,7 @@ namespace NemoKachi.TwitterWrapper
         //                    }
         //                    catch (System.Net.WebException)
         //                    {
-        //                        AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Stopped", Content = "Userstream is stopped by user", TextColor = Windows.UI.Colors.Green });
+        //                        AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Stopped", Content = "Userstream is stopped by user", TextColor = Windows.UI.Xaml.Media.Colors.Green });
         //                        return;
         //                    }
         //                    catch (System.IO.IOException)
@@ -281,156 +215,27 @@ namespace NemoKachi.TwitterWrapper
         //                        {
         //                            case '\r':
         //                                {
-        //                                    if (list.Count > 0)
+        //                                    if (list.Count > 0 && IsStopped != true)
         //                                    {
+        //                                        IsStopped = true;
+        //                                        textBlock1.Text = new String(list.ToArray());
         //                                        JsonObject json = JsonObject.Parse(new String(list.ToArray()));
-        //                                        //Boolean jsonbl;
-        //                                        //{
-        //                                        //    try
-        //                                        //    {
-        //                                        //        json.Parse(new String(list.ToArray()));
-        //                                        //        jsonbl = true;
-        //                                        //    }
-        //                                        //    catch (Exception ex)
-        //                                        //    {
-        //                                        //        //textBlock1.Text += "UserStream: ERROR Ocurred";
-        //                                        //        AddStreamedData(TimelineViews, new TextEvent() { Title = "Error", Content = "UserStream: Wrong Response" + Environment.NewLine + "Message: " + ex.Message, TextColor = Windows.UI.Xaml.Media.Colors.Red });
-        //                                        //        jsonbl = false;
-        //                                        //    }
-        //                                        //}
-        //                                        list.Clear();
-        //                                        //if (jsonbl)
+        //                                        try
         //                                        {
-        //                                            String responseType = null;
-        //                                            if (json.GetNamedString("source") != null)
-        //                                            {
-        //                                                responseType = "Status";
-        //                                            }
-        //                                            else if (json.GetNamedObject("delete") != null)
-        //                                            {
-        //                                                responseType = "Delete";
-        //                                            }
-        //                                            else
-        //                                            {
-        //                                                String eventstr = json.GetNamedString("event");
-        //                                                if (eventstr != null)
-        //                                                {
-        //                                                    switch (eventstr)
-        //                                                    {
-        //                                                        case "favorite":
-        //                                                            {
-        //                                                                responseType = "Favorite";
-        //                                                                break;
-        //                                                            }
-        //                                                        case "unfavorite":
-        //                                                            {
-        //                                                                responseType = "Unfavorite";
-        //                                                                break;
-        //                                                            }
-        //                                                        case "follow":
-        //                                                            {
-        //                                                                responseType = "Follow";
-        //                                                                break;
-        //                                                            }
-        //                                                        case "block":
-        //                                                            {
-        //                                                                responseType = "Block";
-        //                                                                break;
-        //                                                            }
-        //                                                    }
-        //                                                }
-        //                                                else
-        //                                                {
+        //                                            json.Parse(new String(list.ToArray()));
+        //                                        }
+        //                                        catch (Exception ex)
+        //                                        {
+        //                                            //textBlock1.Text += "UserStream: ERROR Ocurred";
+        //                                            AddStreamedData(TimelineViews, new TextEvent() { Title = "Error", Content = "UserStream: Loading Failed, stream stopped." + Environment.NewLine + "Message: " + ex.Message, TextColor = Windows.UI.Xaml.Media.Colors.Red });
+        //                                        }
+        //                                        list.Clear();
 
-        //                                                }
-        //                                            }
-        //                                            //System.Diagnostics.Debug.WriteLine(json.Stringify());
-        //                                            switch (responseType)
-        //                                            {
-        //                                                case "Status":
-        //                                                    {
-        //                                                        //유저스트림 제어기에 주도록 나중에 수정
-        //                                                        AddTweetInStream(new Tweet(json));
-        //                                                        break;
-        //                                                    }
-        //                                                case "Delete":
-        //                                                    {
-        //                                                        JsonObject del_status = json.GetNamedObject("delete").GetNamedObject("status");
-        //                                                        //ITweetElement[] ites = AttachedContainer.GetTweetElementsWithId(Convert.ToUInt64(del_status.GetNamedString("id_str")));//MainPage.GetTweetWithId ~~
-        //                                                        //if (ites.Length != 0)
-        //                                                        //{
-        //                                                        //    foreach (ITweetElement ite in ites)
-        //                                                        //    {
-        //                                                        //        //ite.State = TweetState.Deleted;
-        //                                                        //    }
-        //                                                        //    AddStreamedData(TimelineViews, new KnownDeleteEvent(ites[0].TweetData));
-        //                                                        //}
-        //                                                        AddStreamedData(TimelineViews, new DeleteEvent(del_status));
-        //                                                        /* DeleteEvent를 연결된 각 트윗뷰어들에 넘겨주면서 각 트윗뷰어에서 알아서 지워진 트윗 찾아본 뒤에, 없으면 말고, 있으면 트윗뷰어 히스토리에 트윗 지워졌다는 결과 남김
-        //                                                         */
-
-        //                                                        break;
-        //                                                    }
-        //                                                case "Favorite":
-        //                                                    {
-        //                                                        AddStreamedData(TimelineViews, new FavoriteEvent(json, FavoriteEvent.EventType.Favorited));
-        //                                                        //Tweet twt = new Tweet(json.GetNamedObject("target_object"));
-        //                                                        //AttachedPanel.AddTextMessage(new TextMessage("Response: Favorite",
-        //                                                        //        String.Format(
-        //                                                        //        "User: {0}"
-        //                                                        //        + Environment.NewLine + "Status: {1}"
-        //                                                        //        + Environment.NewLine + "From: {2}", twt.GetUser().GetScreenName(), twt.GetText(), json.GetNamedObject("source").GetNamedString("screen_name")),
-        //                                                        //        TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
-        //                                                        //        jsonString, Windows.UI.Xaml.Media.Colors.Yellow));
-        //                                                        break;
-        //                                                    }
-        //                                                case "Unfavorite":
-        //                                                    {
-        //                                                        AddStreamedData(TimelineViews, new FavoriteEvent(json, FavoriteEvent.EventType.Unfavorited));
-        //                                                        //Tweet twt = new Tweet(json.GetNamedObject("target_object"));
-        //                                                        //AttachedPanel.AddTextMessage(new TextMessage("Response: Unfavorite",
-        //                                                        //        String.Format(
-        //                                                        //        "User: {0}"
-        //                                                        //        + Environment.NewLine + "Status: {1}"
-        //                                                        //        + Environment.NewLine + "From: {2}", twt.GetUser().GetScreenName(), twt.GetText(), json.GetNamedObject("source").GetNamedString("screen_name")),
-        //                                                        //        TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
-        //                                                        //        jsonString, Windows.UI.Xaml.Media.Colors.Yellow));
-        //                                                        break;
-        //                                                    }
-        //                                                case "Follow":
-        //                                                    {
-        //                                                        AddStreamedData(TimelineViews, new UserEvent(json, UserEvent.EventType.Follow));
-        //                                                        //AttachedPanel.AddTextMessage(new TextMessage("Response: Follow",
-        //                                                        //    String.Format(
-        //                                                        //    "Followed: {0}"
-        //                                                        //        + Environment.NewLine + "From: {1}",
-        //                                                        //        json.GetNamedObject("target").GetNamedString("screen_name"),
-        //                                                        //        json.GetNamedObject("source").GetNamedString("screen_name")),
-        //                                                        //    TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
-        //                                                        //    jsonString, new Windows.UI.Xaml.Media.Color() { R = 0x7C, G = 0x90, B = 0xFF, A = 0xFF }));
-
-        //                                                        break;
-        //                                                    }
-        //                                                case "Block":
-        //                                                    {
-        //                                                        AddStreamedData(TimelineViews, new UserEvent(json, UserEvent.EventType.Block));
-        //                                                        //AttachedPanel.AddTextMessage(new TextMessage("Response: Block",
-        //                                                        //    String.Format(
-        //                                                        //    "Blocked: {0}"
-        //                                                        //        + Environment.NewLine + "From: {1}",
-        //                                                        //        json.GetNamedObject("target").GetNamedString("screen_name"),
-        //                                                        //        json.GetNamedObject("source").GetNamedString("screen_name")),
-        //                                                        //    TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
-        //                                                        //    jsonString, Windows.UI.Xaml.Media.Colors.Purple));
-        //                                                        break;
-        //                                                    }
-        //                                                case null:
-        //                                                    {
-        //                                                        //AddStreamedData에 그대로 null 던지기.
-        //                                                        AddStreamedData(TimelineViews, new TextEvent() { Title = "Response: Unknown", Content = "", TextColor = Windows.UI.Colors.Red });
-        //                                                        break;
-        //                                                    }
-        //                                            }
+        //                                        JsonArray jary = json.GetNamedArray("friends");
+        //                                        Followings = new UInt64[jary.Count];
+        //                                        for (Int32 i = 0; i < jary.Count; i++)
+        //                                        {
+        //                                            Followings[i] = (UInt64)jary[i].GetNumber();
         //                                        }
         //                                    }
         //                                    break;
@@ -449,14 +254,209 @@ namespace NemoKachi.TwitterWrapper
         //                    }
         //                }
         //            }
-        //            catch
-        //            {
-        //                System.Diagnostics.Debug.WriteLine("아 뭐 어쩌라고");
-        //            }
-
-        //            //httpClient = new HttpClient(); 
-        //            //httpResponse = response;
         //        }
+
+        //        try
+        //        {//recieving tweet stream
+        //            while (true)
+        //            {
+        //                Byte[] buffer = new Byte[1000];
+        //                try
+        //                {
+        //                    await stream.ReadAsync(buffer, 0, 1000);
+        //                }
+        //                catch (System.Net.WebException)
+        //                {
+        //                    AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Stopped", Content = "Userstream is stopped by user", TextColor = Windows.UI.Colors.Green });
+        //                    return;
+        //                }
+        //                catch (System.IO.IOException)
+        //                {
+        //                    AddStreamedData(TimelineViews, new TextEvent() { Title = "Userstream Stopped", Content = "Userstream is stopped by an accidental disconnection from server", TextColor = Windows.UI.Colors.Red });
+        //                    return;
+        //                }
+        //                foreach (Byte b in buffer)
+        //                {
+        //                    Char ch = Convert.ToChar(b);
+        //                    switch (ch)
+        //                    {
+        //                        case '\r':
+        //                            {
+        //                                if (list.Count > 0)
+        //                                {
+        //                                    JsonObject json = JsonObject.Parse(new String(list.ToArray()));
+        //                                    Boolean jsonbl;
+        //                                    {
+        //                                        try
+        //                                        {
+        //                                            json.Parse(new String(list.ToArray()));
+        //                                            jsonbl = true;
+        //                                        }
+        //                                        catch (Exception ex)
+        //                                        {
+        //                                            //textBlock1.Text += "UserStream: ERROR Ocurred";
+        //                                            AddStreamedData(TimelineViews, new TextEvent() { Title = "Error", Content = "UserStream: Wrong Response" + Environment.NewLine + "Message: " + ex.Message, TextColor = Windows.UI.Xaml.Media.Colors.Red });
+        //                                            jsonbl = false;
+        //                                        }
+        //                                    }
+        //                                    list.Clear();
+        //                                    if (jsonbl)
+        //                                    {
+        //                                        String responseType = null;
+        //                                        if (json.GetNamedString("source") != null)
+        //                                        {
+        //                                            responseType = "Status";
+        //                                        }
+        //                                        else if (json.GetNamedObject("delete") != null)
+        //                                        {
+        //                                            responseType = "Delete";
+        //                                        }
+        //                                        else
+        //                                        {
+        //                                            String eventstr = json.GetNamedString("event");
+        //                                            if (eventstr != null)
+        //                                            {
+        //                                                switch (eventstr)
+        //                                                {
+        //                                                    case "favorite":
+        //                                                        {
+        //                                                            responseType = "Favorite";
+        //                                                            break;
+        //                                                        }
+        //                                                    case "unfavorite":
+        //                                                        {
+        //                                                            responseType = "Unfavorite";
+        //                                                            break;
+        //                                                        }
+        //                                                    case "follow":
+        //                                                        {
+        //                                                            responseType = "Follow";
+        //                                                            break;
+        //                                                        }
+        //                                                    case "block":
+        //                                                        {
+        //                                                            responseType = "Block";
+        //                                                            break;
+        //                                                        }
+        //                                                }
+        //                                            }
+        //                                            else
+        //                                            {
+
+        //                                            }
+        //                                        }
+        //                                        System.Diagnostics.Debug.WriteLine(json.Stringify());
+        //                                        switch (responseType)
+        //                                        {
+        //                                            case "Status":
+        //                                                {
+        //                                                    유저스트림 제어기에 주도록 나중에 수정
+        //                                                    AddTweetInStream(new Tweet(json));
+        //                                                    break;
+        //                                                }
+        //                                            case "Delete":
+        //                                                {
+        //                                                    JsonObject del_status = json.GetNamedObject("delete").GetNamedObject("status");
+        //                                                    ITweetElement[] ites = AttachedContainer.GetTweetElementsWithId(Convert.ToUInt64(del_status.GetNamedString("id_str")));//MainPage.GetTweetWithId ~~
+        //                                                    if (ites.Length != 0)
+        //                                                    {
+        //                                                        foreach (ITweetElement ite in ites)
+        //                                                        {
+        //                                                            //ite.State = TweetState.Deleted;
+        //                                                        }
+        //                                                        AddStreamedData(TimelineViews, new KnownDeleteEvent(ites[0].TweetData));
+        //                                                    }
+        //                                                    AddStreamedData(TimelineViews, new DeleteEvent(del_status));
+        //                                                    /* DeleteEvent를 연결된 각 트윗뷰어들에 넘겨주면서 각 트윗뷰어에서 알아서 지워진 트윗 찾아본 뒤에, 없으면 말고, 있으면 트윗뷰어 히스토리에 트윗 지워졌다는 결과 남김
+        //                                                        */
+
+        //                                                    break;
+        //                                                }
+        //                                            case "Favorite":
+        //                                                {
+        //                                                    AddStreamedData(TimelineViews, new FavoriteEvent(json, FavoriteEvent.EventType.Favorited));
+        //                                                    Tweet twt = new Tweet(json.GetNamedObject("target_object"));
+        //                                                    AttachedPanel.AddTextMessage(new TextMessage("Response: Favorite",
+        //                                                            String.Format(
+        //                                                            "User: {0}"
+        //                                                            + Environment.NewLine + "Status: {1}"
+        //                                                            + Environment.NewLine + "From: {2}", twt.GetUser().GetScreenName(), twt.GetText(), json.GetNamedObject("source").GetNamedString("screen_name")),
+        //                                                            TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
+        //                                                            jsonString, Windows.UI.Xaml.Media.Colors.Yellow));
+        //                                                    break;
+        //                                                }
+        //                                            case "Unfavorite":
+        //                                                {
+        //                                                    AddStreamedData(TimelineViews, new FavoriteEvent(json, FavoriteEvent.EventType.Unfavorited));
+        //                                                    Tweet twt = new Tweet(json.GetNamedObject("target_object"));
+        //                                                    AttachedPanel.AddTextMessage(new TextMessage("Response: Unfavorite",
+        //                                                            String.Format(
+        //                                                            "User: {0}"
+        //                                                            + Environment.NewLine + "Status: {1}"
+        //                                                            + Environment.NewLine + "From: {2}", twt.GetUser().GetScreenName(), twt.GetText(), json.GetNamedObject("source").GetNamedString("screen_name")),
+        //                                                            TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
+        //                                                            jsonString, Windows.UI.Xaml.Media.Colors.Yellow));
+        //                                                    break;
+        //                                                }
+        //                                            case "Follow":
+        //                                                {
+        //                                                    AddStreamedData(TimelineViews, new UserEvent(json, UserEvent.EventType.Follow));
+        //                                                    AttachedPanel.AddTextMessage(new TextMessage("Response: Follow",
+        //                                                        String.Format(
+        //                                                        "Followed: {0}"
+        //                                                            + Environment.NewLine + "From: {1}",
+        //                                                            json.GetNamedObject("target").GetNamedString("screen_name"),
+        //                                                            json.GetNamedObject("source").GetNamedString("screen_name")),
+        //                                                        TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
+        //                                                        jsonString, new Windows.UI.Xaml.Media.Color() { R = 0x7C, G = 0x90, B = 0xFF, A = 0xFF }));
+
+        //                                                    break;
+        //                                                }
+        //                                            case "Block":
+        //                                                {
+        //                                                    AddStreamedData(TimelineViews, new UserEvent(json, UserEvent.EventType.Block));
+        //                                                    AttachedPanel.AddTextMessage(new TextMessage("Response: Block",
+        //                                                        String.Format(
+        //                                                        "Blocked: {0}"
+        //                                                            + Environment.NewLine + "From: {1}",
+        //                                                            json.GetNamedObject("target").GetNamedString("screen_name"),
+        //                                                            json.GetNamedObject("source").GetNamedString("screen_name")),
+        //                                                        TwitterClient.ConvertToDateTime(json.GetNamedString("created_at")),
+        //                                                        jsonString, Windows.UI.Xaml.Media.Colors.Purple));
+        //                                                    break;
+        //                                                }
+        //                                            case null:
+        //                                                {
+        //                                                    AddStreamedData에 그대로 null 던지기.
+        //                                                    AddStreamedData(TimelineViews, new TextEvent() { Title = "Response: Unknown", Content = "", TextColor = Windows.UI.Colors.Red });
+        //                                                    break;
+        //                                                }
+        //                                        }
+        //                                    }
+        //                                }
+        //                                break;
+        //                            }
+        //                        case '\n':
+        //                        case '\0':
+        //                            {
+        //                                break;
+        //                            }
+        //                        default:
+        //                            {
+        //                                list.Add(ch);
+        //                                break;
+        //                            }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        catch
+        //        {
+        //            System.Diagnostics.Debug.WriteLine("아 뭐 어쩌라고");
+        //        }
+
+        //    httpClient = new HttpClient(); 
+        //    httpResponse = response;
         //    }
         //}
 

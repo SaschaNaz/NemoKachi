@@ -242,7 +242,7 @@ namespace NemoKachi.TwitterWrapper
         public Boolean trim_user;
     }
 
-    public class StatusUpdateRequest
+    public class StatusesUpdateRequest
     {
         //queries type 1
         public Boolean display_coordinates = true;
@@ -254,17 +254,20 @@ namespace NemoKachi.TwitterWrapper
         public String place_id;
         public String status;
 
-        public static implicit operator TwitterRequest(StatusUpdateRequest r)
+        public static implicit operator TwitterRequest(StatusesUpdateRequest r)
         {
             List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            if (r.status == null)
+                throw new InvalidTwitterAPIParameterException(r.GetType(), "status");
+
             #region querys type 1
             if (r.display_coordinates)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
-                           "display_coordinates",
-                           "true",
-                           TwitterRequest.RequestType.Type1));
+                    new TwitterRequest.QueryKeyValue(
+                        "display_coordinates",
+                        "true",
+                        TwitterRequest.RequestType.Type1));
             }
             if (r.in_reply_to_status_id != null)
             {
@@ -295,41 +298,38 @@ namespace NemoKachi.TwitterWrapper
             if (r.place_id != null)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
-                           "place_id",
-                           r.place_id,
-                           TwitterRequest.RequestType.Post));
+                    new TwitterRequest.QueryKeyValue(
+                        "place_id",
+                        r.place_id,
+                        TwitterRequest.RequestType.Post));
             }
-            if (r.status != null)
-            {
-                paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
-                           "status",
-                           TwitterClient.AdditionalEscape(Uri.EscapeDataString(r.status)),
-                           TwitterRequest.RequestType.Post));
-            }
+            paramList.Add(
+                new TwitterRequest.QueryKeyValue(
+                    "status",
+                    TwitterClient.AdditionalEscape(Uri.EscapeDataString(r.status)),
+                    TwitterRequest.RequestType.Post));
             #endregion
 
             return new TwitterRequest(paramList.ToArray());
         }
     }
 
-    public class StatusShowRequest
+    public class StatusesShowRequest
     {
         //queries type 1
         public Boolean include_my_retweet = true;
 
-        public static implicit operator TwitterRequest(StatusShowRequest r)
+        public static implicit operator TwitterRequest(StatusesShowRequest r)
         {
             List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
             #region querys type 1
             if (r.include_my_retweet)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
-                           "include_my_retweet",
-                           "true",
-                           TwitterRequest.RequestType.Type1));
+                    new TwitterRequest.QueryKeyValue(
+                        "include_my_retweet",
+                        "true",
+                        TwitterRequest.RequestType.Type1));
             }
             #endregion
 
@@ -337,100 +337,97 @@ namespace NemoKachi.TwitterWrapper
         }
     }
 
-    //public class StatusRetweetRequest
-    //{
-    //    //queries type 1
-    //    public Boolean include_entities = true;
+    public class UsersShowRequest
+    {
+        //queries type 2
+        /// <summary>
+        /// Screen name. If you specify it then you should not specify user_id parameter.
+        /// </summary>
+        public String screen_name;
+        /// <summary>
+        /// User ID. If you specify it then you should not specify screen_name parameter.
+        /// </summary>
+        public Nullable<UInt64> user_id;
 
-    //    //queries type 2
-    //    public Boolean trim_user = false;
+        public static implicit operator TwitterRequest(UsersShowRequest r)
+        {
+            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
 
-    //    public static implicit operator TwitterRequest(StatusRetweetRequest r)
-    //    {
-    //        List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
-    //        #region querys type 1
-    //        if (r.include_entities)
-    //        {
-    //            paramList.Add(
-    //                   new TwitterRequest.QueryKeyValue(
-    //                       "include_entities",
-    //                       "true",
-    //                       TwitterRequest.RequestType.Type1));
-    //        }
-    //        #endregion
-    //        #region querys type 2
-    //        if (r.trim_user)
-    //        {
-    //            paramList.Add(
-    //                   new TwitterRequest.QueryKeyValue(
-    //                       "trim_user",
-    //                       "true",
-    //                       TwitterRequest.RequestType.Type2));
-    //        }
-    //        #endregion
+            if (r.screen_name == null && !r.user_id.HasValue)
+                throw new InvalidTwitterAPIParameterException(r.GetType(), "screen_name", "user_id");
 
-    //        return new TwitterRequest(paramList.ToArray());
-    //    }
-    //}
+            #region querys type 2
+            if (r.screen_name != null)
+            {
+                paramList.Add(
+                    new TwitterRequest.QueryKeyValue(
+                        "screen_name",
+                        r.screen_name,
+                        TwitterRequest.RequestType.Type2));
+            }
+            else if (r.user_id.HasValue)
+            {
+                paramList.Add(
+                    new TwitterRequest.QueryKeyValue(
+                        "user_id",
+                        r.user_id.Value.ToString(),
+                        TwitterRequest.RequestType.Type2));
+            }
+            #endregion
 
-    //public class StatusDestroyRequest
-    //{
-    //    //queries type 1
-    //    public Boolean include_entities = true;
+            return new TwitterRequest(paramList.ToArray());
+        }
+    }
 
-    //    //queries type 2
-    //    public Boolean trim_user = false;
+    public class UsersProfileimageRequest
+    {
+        public String screen_name;
+        public Nullable<ProfileimageSize> size;
 
-    //    public static implicit operator TwitterRequest(StatusDestroyRequest r)
-    //    {
-    //        List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
-    //        #region querys type 1
-    //        if (r.include_entities)
-    //        {
-    //            paramList.Add(
-    //                   new TwitterRequest.QueryKeyValue(
-    //                       "include_entities",
-    //                       "true",
-    //                       TwitterRequest.RequestType.Type1));
-    //        }
-    //        #endregion
-    //        #region querys type 2
-    //        if (r.trim_user)
-    //        {
-    //            paramList.Add(
-    //                   new TwitterRequest.QueryKeyValue(
-    //                       "trim_user",
-    //                       "true",
-    //                       TwitterRequest.RequestType.Type2));
-    //        }
-    //        #endregion
+        public static implicit operator TwitterRequest(UsersProfileimageRequest r)
+        {
+            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
 
-    //        return new TwitterRequest(paramList.ToArray());
-    //    }
-    //}
+            if (r.screen_name == null)
+                throw new InvalidTwitterAPIParameterException(r.GetType(), "screen_name");
 
-    //public class FavoriteRequest
-    //{
-    //    //queries type 1
-    //    public Boolean include_entities = true;
+            #region querys type 2
+            paramList.Add(
+                new TwitterRequest.QueryKeyValue(
+                    "screen_name",
+                    r.screen_name,
+                    TwitterRequest.RequestType.Type2));
+            if (r.size.HasValue)
+            {
+                paramList.Add(
+                    new TwitterRequest.QueryKeyValue(
+                        "size",
+                        r.size.Value.ToString(),
+                        TwitterRequest.RequestType.Type2));
+            }
+            #endregion
 
-    //    public static implicit operator TwitterRequest(FavoriteRequest r)
-    //    {
-    //        List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
-    //        #region querys type 1
-    //        if (r.include_entities)
-    //        {
-    //            paramList.Add(
-    //                   new TwitterRequest.QueryKeyValue(
-    //                       "include_entities",
-    //                       "true",
-    //                       TwitterRequest.RequestType.Type1));
-    //        }
-    //        #endregion
+            return new TwitterRequest(paramList.ToArray());
+        }
+    }
+    public enum ProfileimageSize
+    {
+        bigger,normal,mini,original
+    }
 
-    //        return new TwitterRequest(paramList.ToArray());
-    //    }
-    //}
+    public class InvalidTwitterAPIParameterException : Exception
+    {
+        public Type ParameterType;
+        /// <summary>
+        /// The attributes that must be specified at least one.
+        /// </summary>
+        public String[] AttributeNames;
+        public InvalidTwitterAPIParameterException(Type parameter, params String[] attribute) : base()
+        {
+            ParameterType = parameter;
+            AttributeNames = attribute;
+        }
+    }
 
     public class TwitterRequestException : Exception
     {
