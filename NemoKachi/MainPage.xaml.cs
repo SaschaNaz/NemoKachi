@@ -133,7 +133,7 @@ namespace NemoKachi
                     String resultId = (String)(await dialog.ShowAsync()).Id;
                     if (resultId == "Yes")
                     {
-                        await MainClient.StatusRetweetAsync(collector.TokenCollection[0], targetTweet.Id, null);
+                        await MainClient.StatusesRetweetAsync(collector.TokenCollection[0], targetTweet.Id, null);
                         await new Windows.UI.Popups.MessageDialog("Retweet Succeed").ShowAsync();
                     }
                 }
@@ -167,7 +167,7 @@ namespace NemoKachi
                     String resultId = (String)(await dialog.ShowAsync()).Id;
                     if (resultId == "Yes")
                     {
-                        await MainClient.StatusDestroyAsync(collector.TokenCollection[0], targetTweet.Id, null);
+                        await MainClient.StatusesDestroyAsync(collector.TokenCollection[0], targetTweet.Id, null);
                         await new Windows.UI.Popups.MessageDialog("Destroy Succeed").ShowAsync();
                     }
                 }
