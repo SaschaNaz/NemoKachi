@@ -5,13 +5,124 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Windows.Data.Json;
+using Windows.Foundation;
+using Windows.UI.Xaml;
 using NemoKachi.TwitterWrapper.TwitterDatas;
 
 namespace NemoKachi.TwitterWrapper
 {
-    public partial class TwitterClient
-    {
+    //abstract class StreamEndpoint : DependencyObject, IDisposable
+    //{
+        
 
+        
+    //}
+
+    public class UsersHometimelineEndpoint : DependencyObject, IDisposable
+    {
+        public UsersHometimelineEndpoint(TimeSpan refreshRate)
+        {
+            RefreshTimer.Tick += RefreshTimer_Tick;
+            if (refreshRate != TimeSpan.Zero)
+            {
+
+            }
+        }
+
+        DispatcherTimer RefreshTimer = new DispatcherTimer();
+        IAsyncActionWithProgress<Tweet> StreamAction;
+
+        void RefreshTimer_Tick(object sender, object e)
+        {
+            
+        }
+
+        IAsyncActionWithProgress<Tweet> StreamTweetAsync()
+        {
+            return System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run(async delegate(
+                System.Threading.CancellationToken cancellationToken, IProgress<Tweet> progress)
+            {
+                throw new NotImplementedException();
+            });
+        }
+
+        public TimeSpan RefreshRate
+        {
+            get { return (TimeSpan)GetValue(RefreshRateProperty); }
+            set { SetValue(RefreshRateProperty, value); }
+        }
+
+        public static readonly DependencyProperty RefreshRateProperty =
+        DependencyProperty.Register("RefreshRate",
+        typeof(TimeSpan),
+        typeof(UsersHometimelineEndpoint),
+        new PropertyMetadata(TimeSpan.Zero, new Windows.UI.Xaml.PropertyChangedCallback(RefreshRateChangedCallback)));
+
+        private static async void RefreshRateChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            UsersHometimelineEndpoint streamer = d as UsersHometimelineEndpoint;
+
+            if ((TimeSpan)e.NewValue == TimeSpan.Zero)
+            {
+                streamer.RefreshTimer.Stop();
+                streamer.StreamAction = streamer.StreamTweetAsync();
+
+                await streamer.StreamAction;
+                //Stop the refresh timer and start the user stream
+            }
+            else
+            {
+                streamer.StreamAction.Cancel();
+
+                streamer.RefreshTimer.Interval = (TimeSpan)e.NewValue;
+                streamer.RefreshTimer.Start();
+                //Stop the user stream and start the refresh timer
+            }
+        }
+
+        public void Dispose()
+        {
+            RefreshTimer.Stop();
+            if (StreamAction != null && StreamAction.Status == AsyncStatus.Started)
+                StreamAction.Cancel();
+        }
+
+        public Int32 WaitCount
+        {
+            get { return (Int32)GetValue(WaitCountProperty); }
+            set { SetValue(WaitCountProperty, value); }
+        }
+
+        public static readonly DependencyProperty WaitCountProperty =
+        DependencyProperty.Register("WaitCount",
+        typeof(Int32),
+        typeof(UsersHometimelineEndpoint),
+        new PropertyMetadata(0, new Windows.UI.Xaml.PropertyChangedCallback(WaitQueueEmptiedCallback)));
+
+        private static void WaitQueueEmptiedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            UsersHometimelineEndpoint streamer = d as UsersHometimelineEndpoint;
+
+            if ((Int32)e.NewValue == 0)
+                streamer.OnWaitQueueEmptied(new EventArgs());
+        }
+
+        public event EventHandler WaitQueueEmptied;
+        protected virtual void OnWaitQueueEmptied(EventArgs e)
+        {
+            if (WaitQueueEmptied != null)
+                WaitQueueEmptied(this, e);
+        }
+
+        public event EventHandler NewTweetLoaded;
+        protected virtual void OnNewTweetLoaded(EventArgs e)
+        {
+            if (NewTweetLoaded != null)
+                NewTweetLoaded(this, e);
+        }
+
+        public IAsyncActionWithProgress<Tweet> CatchTweetsAsync();
+    }
         //public static void AddStreamedData(List<ITwitterViewer> Viewers, Tweet twt)//ITwitterData 중에서도 스트림에 추가되는 게 있고 영 안 되는 게 있는데 그건 어떻게 구분하지. 는 그냥 없애고 다 따로 만듦.
         //{
         //    foreach (ITwitterViewer Viewer in Viewers)
@@ -522,5 +633,4 @@ namespace NemoKachi.TwitterWrapper
         //}
 
         //public List<ITwitterStreamer> TwitterStreamers = new List<ITwitterStreamer>();
-    }
 }

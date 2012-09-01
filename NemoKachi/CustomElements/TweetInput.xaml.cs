@@ -61,7 +61,7 @@ namespace NemoKachi.CustomElements
 
             String sendText;
             SendTextBox.Document.GetText(Windows.UI.Text.TextGetOptions.None, out sendText);
-            TwitterWrapper.StatusesUpdateRequest tweetrequest = new TwitterWrapper.StatusesUpdateRequest()
+            TwitterWrapper.StatusesUpdateParameter tweetrequest = new TwitterWrapper.StatusesUpdateParameter()
                 {
                     status = sendText
                 };
@@ -69,7 +69,7 @@ namespace NemoKachi.CustomElements
                 tweetrequest.in_reply_to_status_id = ReplyTweet.Id;
             TwitterWrapper.TwitterDatas.Tweet twt = await MainClient.StatusesUpdateAsync(
                 collector.TokenCollection[0],
-                tweetrequest, new TwitterWrapper.GetStatusRequest());
+                tweetrequest, new TwitterWrapper.GetStatusParameter());
             house.StoreTweets(twt);
         }
     }
