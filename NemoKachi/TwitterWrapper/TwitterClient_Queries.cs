@@ -10,12 +10,12 @@ namespace NemoKachi.TwitterWrapper
     //{
     //    public TwitterClient Client { get; private set; }
     //    public Uri RequestUrl { get; private set; }
-    //    public ITwitterRequestQuery RequestQuery { get; private set; }
+    //    public ITwitterParameterQuery RequestQuery { get; private set; }
     //    public Uri StreamUrl { get; private set; }
-    //    public ITwitterRequestQuery StreamQuery { get; private set; }
+    //    public ITwitterParameterQuery StreamQuery { get; private set; }
     //    public String DistinctName { get; private set; }
 
-    //    public ClientLine(String distinctName, Uri requestUrl, ITwitterRequestQuery requestQuery, Uri streamUrl, ITwitterRequestQuery streamQuery)
+    //    public ClientLine(String distinctName, Uri requestUrl, ITwitterParameterQuery requestQuery, Uri streamUrl, ITwitterParameterQuery streamQuery)
     //    {
     //        DistinctName = distinctName;
     //        RequestUrl = requestUrl;
@@ -51,13 +51,13 @@ namespace NemoKachi.TwitterWrapper
     //        get { return new Uri("https://userstream.twitter.com/2/user.json"); }
     //    }
 
-    //    public TwitterRequest MakeTwitterRequest()//type:옛 RefreshQuery는 새 UserTimelineQuery와 같다
+    //    public TwitterParameter MakeTwitterParameter()//type:옛 RefreshQuery는 새 UserTimelineQuery와 같다
     //    {
-    //        return TwitterRequest.MakeRequest(
-    //            new TwitterRequest.QueryKeyValue[]
+    //        return TwitterParameter.MakeRequest(
+    //            new TwitterParameter.QueryKeyValue[]
     //            {
-    //                new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
-    //                new TwitterRequest.QueryKeyValue("include_rts", "true", TwitterRequest.RequestType.Type1)
+    //                new TwitterParameter.QueryKeyValue("include_entities", "true", TwitterParameter.RequestType.Type1),
+    //                new TwitterParameter.QueryKeyValue("include_rts", "true", TwitterParameter.RequestType.Type1)
     //            });
     //    }
     //}
@@ -80,24 +80,24 @@ namespace NemoKachi.TwitterWrapper
     //        get { return null; }//(...)
     //    }
 
-    //    public ITwitterRequestQuery MakeTwitterRequest()
+    //    public ITwitterParameterQuery MakeTwitterParameter()
     //    {
-    //        return TwitterRequest.MakeQuery(
-    //            new TwitterRequest.QueryKeyValue[]
+    //        return TwitterParameter.MakeQuery(
+    //            new TwitterParameter.QueryKeyValue[]
     //            {
-    //                new TwitterRequest.QueryKeyValue("include_entities", "true", TwitterRequest.RequestType.Type1),
-    //                new TwitterRequest.QueryKeyValue("include_rts", "true", TwitterRequest.RequestType.Type1)
+    //                new TwitterParameter.QueryKeyValue("include_entities", "true", TwitterParameter.RequestType.Type1),
+    //                new TwitterParameter.QueryKeyValue("include_rts", "true", TwitterParameter.RequestType.Type1)
     //            });
     //    }
     //}
 
 
-    //메소드 모두에 적용한 뒤에 OAuth에서 ITwitterRequestQuery 직접 받도록 수정. typeof로 타입 인식할 수 있을 듯
+    //메소드 모두에 적용한 뒤에 OAuth에서 ITwitterParameterQuery 직접 받도록 수정. typeof로 타입 인식할 수 있을 듯
     //GetQueries니 GetPostQueries니 다 필요없고 GetQueryString GetPostQueryString이면 한방에 끝나는걸 왜이러고있지....!!!!!!
     //if문으로 문자열에 더하고 더하고 하는것도 좋지만 지금 하는것처럼 리스트에 넣고 한방에 Join 돌리는 것이 더 괜찮을 듯하다.
     //GetQueryString의 경우 쿼리가 두 부분으로 나뉘므로 주의
 
-    public class TwitterRequest
+    public class TwitterParameter
     {
         public enum RequestType
         {
@@ -133,7 +133,7 @@ namespace NemoKachi.TwitterWrapper
 
         //posts
 
-        public TwitterRequest(params QueryKeyValue[] keyvalues)
+        public TwitterParameter(params QueryKeyValue[] keyvalues)
         {
             Query1 = new SortedDictionary<String, String>();
             Query2 = new SortedDictionary<String, String>();
@@ -166,23 +166,23 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        public void MergeGetStatusRequest(GetStatusRequest getstatus)
+        public void MergeGetStatusParameter(GetStatusParameter getstatus)
         {
             if (getstatus.include_entities)
             {
                 AddValues(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "include_entities",
                            "true",
-                           TwitterRequest.RequestType.Type1));
+                           TwitterParameter.RequestType.Type1));
             }
             if (getstatus.trim_user)
             {
                 AddValues(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "trim_user",
                            "true",
-                           TwitterRequest.RequestType.Type2));
+                           TwitterParameter.RequestType.Type2));
             }
         }
 
@@ -236,13 +236,13 @@ namespace NemoKachi.TwitterWrapper
         }
     }
 
-    public class GetStatusRequest
+    public class GetStatusParameter
     {
         public Boolean include_entities = true;
         public Boolean trim_user;
     }
 
-    public class StatusesUpdateRequest
+    public class StatusesUpdateParameter
     {
         //queries type 1
         public Boolean display_coordinates = true;
@@ -254,9 +254,9 @@ namespace NemoKachi.TwitterWrapper
         public String place_id;
         public String status;
 
-        public static implicit operator TwitterRequest(StatusesUpdateRequest r)
+        public static implicit operator TwitterParameter(StatusesUpdateParameter r)
         {
-            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
             if (r.status == null)
                 throw new InvalidTwitterAPIParameterException(r.GetType(), "status");
 
@@ -264,80 +264,80 @@ namespace NemoKachi.TwitterWrapper
             if (r.display_coordinates)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "display_coordinates",
                         "true",
-                        TwitterRequest.RequestType.Type1));
+                        TwitterParameter.RequestType.Type1));
             }
             if (r.in_reply_to_status_id != null)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "in_reply_to_status_id",
                         r.in_reply_to_status_id.Value.ToString(),
-                        TwitterRequest.RequestType.Type1));
+                        TwitterParameter.RequestType.Type1));
             }
             if (r.lattitude != null)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "lat",
                         r.lattitude.Value.ToString(),
-                        TwitterRequest.RequestType.Type1));
+                        TwitterParameter.RequestType.Type1));
             }
             if (r.longitude != null)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "long",
                         r.longitude.Value.ToString(),
-                        TwitterRequest.RequestType.Type1));
+                        TwitterParameter.RequestType.Type1));
             }
             #endregion
             #region posts
             if (r.place_id != null)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "place_id",
                         r.place_id,
-                        TwitterRequest.RequestType.Post));
+                        TwitterParameter.RequestType.Post));
             }
             paramList.Add(
-                new TwitterRequest.QueryKeyValue(
+                new TwitterParameter.QueryKeyValue(
                     "status",
                     TwitterClient.AdditionalEscape(Uri.EscapeDataString(r.status)),
-                    TwitterRequest.RequestType.Post));
+                    TwitterParameter.RequestType.Post));
             #endregion
 
-            return new TwitterRequest(paramList.ToArray());
+            return new TwitterParameter(paramList.ToArray());
         }
     }
 
-    public class StatusesShowRequest
+    public class StatusesShowParameter
     {
         //queries type 1
         public Boolean include_my_retweet = true;
 
-        public static implicit operator TwitterRequest(StatusesShowRequest r)
+        public static implicit operator TwitterParameter(StatusesShowParameter r)
         {
-            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
             #region querys type 1
             if (r.include_my_retweet)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "include_my_retweet",
                         "true",
-                        TwitterRequest.RequestType.Type1));
+                        TwitterParameter.RequestType.Type1));
             }
             #endregion
 
-            return new TwitterRequest(paramList.ToArray());
+            return new TwitterParameter(paramList.ToArray());
         }
     }
 
-    public class UsersShowRequest
+    public class UsersShowParameter
     {
         //queries type 2
         /// <summary>
@@ -349,9 +349,9 @@ namespace NemoKachi.TwitterWrapper
         /// </summary>
         public Nullable<UInt64> user_id;
 
-        public static implicit operator TwitterRequest(UsersShowRequest r)
+        public static implicit operator TwitterParameter(UsersShowParameter r)
         {
-            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
 
             if (r.screen_name == null && !r.user_id.HasValue)
                 throw new InvalidTwitterAPIParameterException(r.GetType(), "screen_name", "user_id");
@@ -360,59 +360,194 @@ namespace NemoKachi.TwitterWrapper
             if (r.screen_name != null)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "screen_name",
                         r.screen_name,
-                        TwitterRequest.RequestType.Type2));
+                        TwitterParameter.RequestType.Type2));
             }
             else if (r.user_id.HasValue)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "user_id",
                         r.user_id.Value.ToString(),
-                        TwitterRequest.RequestType.Type2));
+                        TwitterParameter.RequestType.Type2));
             }
             #endregion
 
-            return new TwitterRequest(paramList.ToArray());
+            return new TwitterParameter(paramList.ToArray());
         }
     }
 
-    public class UsersProfileimageRequest
+    public class UsersProfileimageParameter
     {
         public String screen_name;
         public Nullable<ProfileimageSize> size;
 
-        public static implicit operator TwitterRequest(UsersProfileimageRequest r)
+        public static implicit operator TwitterParameter(UsersProfileimageParameter r)
         {
-            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
 
             if (r.screen_name == null)
                 throw new InvalidTwitterAPIParameterException(r.GetType(), "screen_name");
 
             #region querys type 2
             paramList.Add(
-                new TwitterRequest.QueryKeyValue(
+                new TwitterParameter.QueryKeyValue(
                     "screen_name",
                     r.screen_name,
-                    TwitterRequest.RequestType.Type2));
+                    TwitterParameter.RequestType.Type2));
             if (r.size.HasValue)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "size",
                         r.size.Value.ToString(),
-                        TwitterRequest.RequestType.Type2));
+                        TwitterParameter.RequestType.Type2));
             }
             #endregion
 
-            return new TwitterRequest(paramList.ToArray());
+            return new TwitterParameter(paramList.ToArray());
         }
     }
     public enum ProfileimageSize
     {
         bigger,normal,mini,original
+    }
+
+    public class StatusesHometimelineParameter
+    {
+        //queries type 1
+        public Boolean contributor_details;
+        public Nullable<Int32> count;
+        public Boolean exclude_replies;
+        public Boolean include_rts = true;
+        public Nullable<UInt64> max_id;
+
+        //queries type 2
+        public Nullable<UInt64> since_id;
+
+        public static implicit operator TwitterParameter(StatusesHometimelineParameter r)
+        {
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
+            #region querys type 1
+            if (r.contributor_details)
+            {
+                paramList.Add(
+                    new TwitterParameter.QueryKeyValue(
+                        "contributor_details",
+                        "true",
+                        TwitterParameter.RequestType.Type1));
+            }
+            if (r.count.HasValue)
+            {
+                paramList.Add(
+                       new TwitterParameter.QueryKeyValue(
+                           "count",
+                           r.count.Value,
+                           TwitterParameter.RequestType.Type1));
+            }
+            if (r.exclude_replies)
+            {
+                paramList.Add(
+                    new TwitterParameter.QueryKeyValue(
+                        "exclude_replies",
+                        "true",
+                        TwitterParameter.RequestType.Type1));
+            }
+            if (r.include_rts)
+            {
+                paramList.Add(
+                    new TwitterParameter.QueryKeyValue(
+                        "include_rts",
+                        "true",
+                        TwitterParameter.RequestType.Type1));
+            }
+            if (r.max_id != null)
+            {
+                paramList.Add(
+                       new TwitterParameter.QueryKeyValue(
+                           "max_id",
+                           r.max_id.Value,
+                           TwitterParameter.RequestType.Type1));
+            }
+            #endregion
+            #region querys type 2
+            if (r.since_id != null)
+            {
+                paramList.Add(
+                       new TwitterParameter.QueryKeyValue(
+                           "since_id",
+                           r.since_id.Value,
+                           TwitterParameter.RequestType.Type2));
+            }
+            #endregion
+
+            return new TwitterParameter(paramList.ToArray());
+        }
+    }
+
+    public class StatusesMentionsParameter
+    {
+        //queries type 1
+        public Boolean contributor_details;
+        public Nullable<Int32> count;
+        public Boolean include_rts = true;
+        public Nullable<UInt64> max_id;
+
+        //queries type 2
+        public Nullable<UInt64> since_id;
+
+        public static implicit operator TwitterParameter(StatusesMentionsParameter r)
+        {
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
+            #region querys type 1
+            if (r.contributor_details)
+            {
+                paramList.Add(
+                    new TwitterParameter.QueryKeyValue(
+                        "contributor_details",
+                        "true",
+                        TwitterParameter.RequestType.Type1));
+            }
+            if (r.count.HasValue)
+            {
+                paramList.Add(
+                       new TwitterParameter.QueryKeyValue(
+                           "count",
+                           r.count.Value,
+                           TwitterParameter.RequestType.Type1));
+            }
+            if (r.include_rts)
+            {
+                paramList.Add(
+                    new TwitterParameter.QueryKeyValue(
+                        "include_rts",
+                        "true",
+                        TwitterParameter.RequestType.Type1));
+            }
+            if (r.max_id.HasValue)
+            {
+                paramList.Add(
+                       new TwitterParameter.QueryKeyValue(
+                           "max_id",
+                           r.max_id.Value,
+                           TwitterParameter.RequestType.Type1));
+            }
+            #endregion
+            #region querys type 2
+            if (r.since_id.HasValue)
+            {
+                paramList.Add(
+                       new TwitterParameter.QueryKeyValue(
+                           "since_id",
+                           r.since_id.Value,
+                           TwitterParameter.RequestType.Type2));
+            }
+            #endregion
+
+            return new TwitterParameter(paramList.ToArray());
+        }
     }
 
     public class InvalidTwitterAPIParameterException : Exception
@@ -429,51 +564,51 @@ namespace NemoKachi.TwitterWrapper
         }
     }
 
-    public class TwitterRequestException : Exception
+    public class TwitterParameterException : Exception
     {
         public System.Net.HttpStatusCode StatusCode { get; private set; }
         public Int32 ErrorNumber { get; private set; }
 
-        public TwitterRequestException(System.Net.HttpStatusCode statuscode, Int32 errornumber, String message)
+        public TwitterParameterException(System.Net.HttpStatusCode statuscode, Int32 errornumber, String message)
             : base(message)
         {
             StatusCode = statuscode;
             ErrorNumber = errornumber;
         }
 
-        public static TwitterRequestException Parse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
+        public static TwitterParameterException Parse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
         {
-            return new TwitterRequestException(
+            return new TwitterParameterException(
                 errorcode, (Int32)errorobject.GetNamedNumber("code"), errorobject.GetNamedString("message"));
         }
     }
 
-    public class TwitterRequestStringException : Exception
+    public class TwitterParameterStringException : Exception
     {
         public System.Net.HttpStatusCode StatusCode { get; private set; }
 
-        public TwitterRequestStringException(System.Net.HttpStatusCode statuscode, String message)
+        public TwitterParameterStringException(System.Net.HttpStatusCode statuscode, String message)
             : base(message)
         {
             StatusCode = statuscode;
         }
     }
 
-    public class TwitterRequestProtectedException : Exception
+    public class TwitterParameterProtectedException : Exception
     {
         public System.Net.HttpStatusCode StatusCode { get; private set; }
         public String Request { get; private set; }
 
-        public TwitterRequestProtectedException(System.Net.HttpStatusCode statuscode, String request, String message)
+        public TwitterParameterProtectedException(System.Net.HttpStatusCode statuscode, String request, String message)
             : base(message)
         {
             StatusCode = statuscode;
             Request = request;
         }
 
-        public static TwitterRequestProtectedException Parse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
+        public static TwitterParameterProtectedException Parse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
         {
-            return new TwitterRequestProtectedException(
+            return new TwitterParameterProtectedException(
                 errorcode, errorobject.GetNamedString("request"), errorobject.GetNamedString("error"));
         }
     }
@@ -488,47 +623,47 @@ namespace NemoKachi.TwitterWrapper
         //queries type 2
         public Nullable<UInt64> since_id;
 
-        public static implicit operator TwitterRequest(LocalRefreshRequest r)
+        public static implicit operator TwitterParameter(LocalRefreshRequest r)
         {
-            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
             #region querys type 1
             if (r.include_entities)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "include_entities",
                            "true",
-                           TwitterRequest.RequestType.Type1));
+                           TwitterParameter.RequestType.Type1));
             }
             if (r.include_rts)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "include_rts",
                         "true",
-                        TwitterRequest.RequestType.Type1));
+                        TwitterParameter.RequestType.Type1));
             }
             if (r.max_id != null)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "max_id",
                            r.max_id.Value,
-                           TwitterRequest.RequestType.Type1));
+                           TwitterParameter.RequestType.Type1));
             }
             #endregion
             #region querys type 2
             if (r.since_id != null)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "since_id",
                            r.since_id.Value,
-                           TwitterRequest.RequestType.Type2));
+                           TwitterParameter.RequestType.Type2));
             }
             #endregion
 
-            return new TwitterRequest(paramList.ToArray());
+            return new TwitterParameter(paramList.ToArray());
         }
     }
 
@@ -543,55 +678,55 @@ namespace NemoKachi.TwitterWrapper
         public String screen_name;
         public Nullable<UInt64> since_id;
 
-        public static implicit operator TwitterRequest(SpecificUserRefreshRequest r)
+        public static implicit operator TwitterParameter(SpecificUserRefreshRequest r)
         {
-            List<TwitterRequest.QueryKeyValue> paramList = new List<TwitterRequest.QueryKeyValue>();
+            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
             #region querys type 1
             if (r.include_entities)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "include_entities",
                            "true",
-                           TwitterRequest.RequestType.Type1));
+                           TwitterParameter.RequestType.Type1));
             }
             if (r.include_rts)
             {
                 paramList.Add(
-                    new TwitterRequest.QueryKeyValue(
+                    new TwitterParameter.QueryKeyValue(
                         "include_rts",
                         "true",
-                        TwitterRequest.RequestType.Type1));
+                        TwitterParameter.RequestType.Type1));
             }
             if (r.max_id != null)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "max_id",
                            r.max_id.Value,
-                           TwitterRequest.RequestType.Type1));
+                           TwitterParameter.RequestType.Type1));
             }
             #endregion
             #region querys type 2
             if (r.screen_name != null)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "screen_name",
                            r.screen_name,
-                           TwitterRequest.RequestType.Type2));
+                           TwitterParameter.RequestType.Type2));
             }
             if (r.since_id != null)
             {
                 paramList.Add(
-                       new TwitterRequest.QueryKeyValue(
+                       new TwitterParameter.QueryKeyValue(
                            "since_id",
                            r.since_id.Value,
-                           TwitterRequest.RequestType.Type2));
+                           TwitterParameter.RequestType.Type2));
             }
             #endregion
 
-            return new TwitterRequest(paramList.ToArray());
+            return new TwitterParameter(paramList.ToArray());
         }
     }
 
@@ -600,7 +735,7 @@ namespace NemoKachi.TwitterWrapper
         Uri RestURI { get; }
         Uri StreamURI { get; }
         UInt64 AccountID { get; set; }
-        TwitterRequest GetRequest();
+        TwitterParameter GetRequest();
         /// <summary>
         /// 마지막으로 불러들인 트윗 ID를 기억
         /// </summary>
@@ -637,7 +772,7 @@ namespace NemoKachi.TwitterWrapper
             RestOption = restOption;
         }
 
-        public TwitterRequest GetRequest()
+        public TwitterParameter GetRequest()
         {
             return RestOption;
         }
@@ -672,7 +807,7 @@ namespace NemoKachi.TwitterWrapper
             RestOption = restOption;
         }
 
-        public TwitterRequest GetRequest()
+        public TwitterParameter GetRequest()
         {
             return RestOption;
         }
@@ -707,7 +842,7 @@ namespace NemoKachi.TwitterWrapper
             RestOption = restOption;
         }
 
-        public TwitterRequest GetRequest()
+        public TwitterParameter GetRequest()
         {
             return RestOption;
         }
