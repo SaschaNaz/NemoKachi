@@ -26,9 +26,9 @@ namespace NemoKachi.TwitterWrapper
             get { return (String)GetValue(AccountNameProperty); }
             set { SetValue(AccountNameProperty, value); }
         }
-        public Uri AccountImageUri
+        public TwitterUser AccountInformation
         {
-            get { return (Uri)GetValue(AccountImageUriProperty); }
+            get { return (TwitterUser)GetValue(AccountImageUriProperty); }
             set { SetValue(AccountImageUriProperty, value); }
         }
 
@@ -39,8 +39,8 @@ namespace NemoKachi.TwitterWrapper
             new PropertyMetadata(null));
 
         public static readonly DependencyProperty AccountImageUriProperty =
-            DependencyProperty.Register("AccountImageUri",
-            typeof(Uri),
+            DependencyProperty.Register("AccountInformation",
+            typeof(TwitterUser),
             typeof(AccountToken),
             new PropertyMetadata(null));
     }
@@ -185,7 +185,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                "https://api.twitter.com/1/statuses/update.json", twtRequest, null, completionOption))
+                "https://api.twitter.com/1.1/statuses/update.json", twtRequest, null, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -217,7 +217,7 @@ namespace NemoKachi.TwitterWrapper
             twtRequest.MergeGetStatusParameter(getstatus);
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
-                String.Format("https://api.twitter.com/1/statuses/show/{0}.json", Id), twtRequest))
+                String.Format("https://api.twitter.com/1.1/statuses/show/{0}.json", Id), twtRequest))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -251,7 +251,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/statuses/retweet/{0}.json", Id), twtRequest, completionOption))
+                String.Format("https://api.twitter.com/1.1/statuses/retweet/{0}.json", Id), twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -288,7 +288,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/statuses/destroy/{0}.json", Id), twtRequest, completionOption))
+                String.Format("https://api.twitter.com/1.1/statuses/destroy/{0}.json", Id), twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -314,7 +314,8 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<Tweet> FavoriteCreateAsync(AccountToken aToken, UInt64 Id, GetStatusParameter getstatus)
         {
-            TwitterParameter twtRequest = new TwitterParameter();
+            TwitterParameter twtRequest = new TwitterParameter(
+                new TwitterParameter.QueryKeyValue("id", Id.ToString(), TwitterParameter.RequestType.Type1));
             HttpCompletionOption completionOption;
             if (getstatus != null)
             {
@@ -325,7 +326,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/favorites/create/{0}.json", Id), twtRequest, completionOption))
+                "https://api.twitter.com/1.1/favorites/create.json", twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -351,7 +352,8 @@ namespace NemoKachi.TwitterWrapper
 
         public async Task<Tweet> FavoriteDestroyAsync(AccountToken aToken, UInt64 Id, GetStatusParameter getstatus)
         {
-            TwitterParameter twtRequest = new TwitterParameter();
+            TwitterParameter twtRequest = new TwitterParameter(
+                new TwitterParameter.QueryKeyValue("id", Id.ToString(), TwitterParameter.RequestType.Type1));
             HttpCompletionOption completionOption;
             if (getstatus != null)
             {
@@ -362,7 +364,7 @@ namespace NemoKachi.TwitterWrapper
                 completionOption = HttpCompletionOption.ResponseHeadersRead;
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                String.Format("https://api.twitter.com/1/favorites/destroy/{0}.json", Id), twtRequest, completionOption))
+                "https://api.twitter.com/1.1/favorites/destroy.json", twtRequest, completionOption))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -389,7 +391,7 @@ namespace NemoKachi.TwitterWrapper
             twtRequest.MergeGetStatusParameter(getstatus);
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                "https://api.twitter.com/1/statuses/home_timeline.json", twtRequest))
+                "https://api.twitter.com/1.1/statuses/home_timeline.json", twtRequest))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -419,7 +421,7 @@ namespace NemoKachi.TwitterWrapper
             twtRequest.MergeGetStatusParameter(getstatus);
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Post,
-                "https://api.twitter.com/1/statuses/mentions.json", twtRequest))
+                "https://api.twitter.com/1.1/statuses/mentions.json", twtRequest))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -478,7 +480,7 @@ namespace NemoKachi.TwitterWrapper
             twtRequest.MergeGetStatusParameter(getstatus);
             using (HttpResponseMessage response = await OAuthRequestAsync(
                 aToken, HttpMethod.Get,
-                "https://api.twitter.com/1/users/show.json", twtRequest))
+                "https://api.twitter.com/1.1/users/show.json", twtRequest))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -493,44 +495,6 @@ namespace NemoKachi.TwitterWrapper
                 }
             }
         }
-
-        public async Task<Uri> UsersProfileimageAsync(AccountToken aToken, UsersProfileimageParameter tweetQuery)
-        {
-            using (HttpResponseMessage response = await OAuthRequestAsync(
-                aToken, HttpMethod.Get,
-                String.Format("https://api.twitter.com/1/users/profile_image/{0}.json", tweetQuery.screen_name), tweetQuery))
-            {
-                if (response.StatusCode == System.Net.HttpStatusCode.Redirect)
-                {
-                    return response.Headers.Location;
-                }
-                else
-                {
-                    String message = await response.Content.ReadAsStringAsync();
-
-                    System.Diagnostics.Debug.WriteLine(message);
-                    throw TwitterExceptionParse(response.StatusCode, Windows.Data.Json.JsonObject.Parse(message));
-                }
-            }
-        }
-
-        //public async Task<HttpResponseMessage> MentionRefresh(String lastId)
-        //{
-        //    SortedDictionary<String, String> querys = new SortedDictionary<String, String>()
-        //    {
-        //        { "include_TwitterEntities", "true" },
-        //        { "include_rts", "true" }
-        //    };
-        //    if (lastId != "")
-        //    {
-        //        querys.Add("since_id", lastId);
-        //    }
-        //    return await OAuth(
-        //            new SortedDictionary<String, String>(),
-        //        new SortedDictionary<String, String>(),
-        //        HttpMethod.Get,
-        //        "https://api.twitter.com/1/statuses/mentions.json", querys, textBlock1);
-        //}
 
         /// <summary>
         /// 문자열과 키를 받아서 해시값을 Base64 형태로 내보냅니다

@@ -142,7 +142,7 @@ namespace NemoKachi.TwitterWrapper
                     Token,
                     HttpMethod.Post,
                     "https://api.twitter.com/oauth/request_token",
-                    new TwitterRequest(), CallbackUri, HttpCompletionOption.ResponseContentRead))
+                    new TwitterParameter(), CallbackUri, HttpCompletionOption.ResponseContentRead))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -217,7 +217,7 @@ namespace NemoKachi.TwitterWrapper
                 {
                     Token.oauth_token = webparams["oauth_token"];
                     using (HttpResponseMessage response = await Client.OAuthRequestAsync(Token, HttpMethod.Post, "https://api.twitter.com/oauth/access_token",
-                        new TwitterRequest(new TwitterRequest.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterRequest.RequestType.Post)), null, HttpCompletionOption.ResponseContentRead))
+                        new TwitterParameter(new TwitterParameter.QueryKeyValue("oauth_verifier", webparams["oauth_verifier"], TwitterParameter.RequestType.Post)), null, HttpCompletionOption.ResponseContentRead))
                     {
 
                         if (response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -233,7 +233,7 @@ namespace NemoKachi.TwitterWrapper
 
                             //"Accessing your account image...";
                             Vis.Phase = LoginPhase.GettingAccountImageURI;
-                            Token.AccountImageUri = await Client.UsersProfileimageAsync(Token, new UsersProfileimageRequest() { screen_name = Token.AccountName, size = ProfileimageSize.bigger });
+                            Token.AccountInformation = await Client.UsersShowAsync(Token, new UsersShowParameter() { user_id = Token.AccountId }, new GetStatusParameter());
                             //using (HttpResponseMessage userresponse = await Client.GetUserProfileImage(Token, Token.AccountName))
                             //{
                             //    if (userresponse.StatusCode == System.Net.HttpStatusCode.Redirect)
