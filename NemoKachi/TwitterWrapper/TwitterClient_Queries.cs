@@ -168,12 +168,12 @@ namespace NemoKachi.TwitterWrapper
 
         public void MergeGetStatusParameter(GetStatusParameter getstatus)
         {
-            if (getstatus.include_entities)
+            if (!getstatus.include_entities)
             {
                 AddValues(
                        new TwitterParameter.QueryKeyValue(
                            "include_entities",
-                           "true",
+                           "false",
                            TwitterParameter.RequestType.Type1));
             }
             if (getstatus.trim_user)
@@ -379,49 +379,12 @@ namespace NemoKachi.TwitterWrapper
         }
     }
 
-    public class UsersProfileimageParameter
-    {
-        public String screen_name;
-        public Nullable<ProfileimageSize> size;
-
-        public static implicit operator TwitterParameter(UsersProfileimageParameter r)
-        {
-            List<TwitterParameter.QueryKeyValue> paramList = new List<TwitterParameter.QueryKeyValue>();
-
-            if (r.screen_name == null)
-                throw new InvalidTwitterAPIParameterException(r.GetType(), "screen_name");
-
-            #region querys type 2
-            paramList.Add(
-                new TwitterParameter.QueryKeyValue(
-                    "screen_name",
-                    r.screen_name,
-                    TwitterParameter.RequestType.Type2));
-            if (r.size.HasValue)
-            {
-                paramList.Add(
-                    new TwitterParameter.QueryKeyValue(
-                        "size",
-                        r.size.Value.ToString(),
-                        TwitterParameter.RequestType.Type2));
-            }
-            #endregion
-
-            return new TwitterParameter(paramList.ToArray());
-        }
-    }
-    public enum ProfileimageSize
-    {
-        bigger,normal,mini,original
-    }
-
     public class StatusesHometimelineParameter
     {
         //queries type 1
         public Boolean contributor_details;
         public Nullable<Int32> count;
         public Boolean exclude_replies;
-        public Boolean include_rts = true;
         public Nullable<UInt64> max_id;
 
         //queries type 2
@@ -455,14 +418,6 @@ namespace NemoKachi.TwitterWrapper
                         "true",
                         TwitterParameter.RequestType.Type1));
             }
-            if (r.include_rts)
-            {
-                paramList.Add(
-                    new TwitterParameter.QueryKeyValue(
-                        "include_rts",
-                        "true",
-                        TwitterParameter.RequestType.Type1));
-            }
             if (r.max_id != null)
             {
                 paramList.Add(
@@ -492,7 +447,6 @@ namespace NemoKachi.TwitterWrapper
         //queries type 1
         public Boolean contributor_details;
         public Nullable<Int32> count;
-        public Boolean include_rts = true;
         public Nullable<UInt64> max_id;
 
         //queries type 2
@@ -517,14 +471,6 @@ namespace NemoKachi.TwitterWrapper
                            "count",
                            r.count.Value,
                            TwitterParameter.RequestType.Type1));
-            }
-            if (r.include_rts)
-            {
-                paramList.Add(
-                    new TwitterParameter.QueryKeyValue(
-                        "include_rts",
-                        "true",
-                        TwitterParameter.RequestType.Type1));
             }
             if (r.max_id.HasValue)
             {
@@ -847,66 +793,4 @@ namespace NemoKachi.TwitterWrapper
             return RestOption;
         }
     }
-
-    //private enum RequestType
-    //{
-    //    Tweet = 0, Retweet, Destroy = 1, Refresh = 2
-    //}
-
-    //public static TweetColumnQuery TimelineUrl
-    //{
-    //    get
-    //    {
-    //        return new TweetColumnQuery()
-    //        {
-    //            twitterUrl = "https://api.twitter.com/1/statuses/home_timeline.json",
-    //            queries = new RefreshQuery()
-    //            {
-    //                include_entities = true,
-    //                include_rts = true,
-    //            }
-    //        };
-    //    }
-    //}
-    //public static TweetColumnQuery MentionUrl
-    //{
-    //    get
-    //    {
-    //        return new TweetColumnQuery()
-    //        {
-    //            twitterUrl = "https://api.twitter.com/1/statuses/mentions.json",
-    //            queries = new RefreshQuery()
-    //            {
-    //                include_entities = true,
-    //                include_rts = true,
-    //            }
-    //        };
-    //    }
-    //}
-    //public static TweetColumnQuery UserUrl(String screen_name)
-    //{
-    //    return new TweetColumnQuery()
-    //    {
-    //        twitterUrl = "http://api.twitter.com/1/statuses/user_timeline.json",
-    //        queries = new RefreshQuery()
-    //        {
-    //            include_entities = true,
-    //            include_rts = true,
-    //            screen_name = screen_name
-    //        }
-    //        //new SortedDictionary<String, String>()
-    //        //{
-    //        //    { "include_entities", "true" },
-    //        //    { "include_rts", "true" },
-    //        //    { "screen_name", screen_name } 
-    //        //}
-    //    };
-    //}
-
-    //public struct TweetColumnQuery
-    //{
-    //    public String twitterUrl;
-    //    public RefreshQuery queries;
-    //}
-    
 }
