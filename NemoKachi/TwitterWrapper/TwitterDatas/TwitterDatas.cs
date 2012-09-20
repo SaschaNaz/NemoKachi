@@ -113,7 +113,7 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
                 }
             }
             AttachedEntities = new TwitterEntities(jo.GetNamedObject("entities"));
-            Text = Uri.UnescapeDataString(jo.GetNamedString("text"));
+            Text = Windows.Data.Html.HtmlUtilities.ConvertToText(Uri.UnescapeDataString(jo.GetNamedString("text")));
             CreatedAt = TwitterClient.ConvertToDateTime(jo.GetNamedString("created_at"));
             Id = Convert.ToUInt64(jo.GetNamedString("id_str"));
             Source = GetClientName(jo.GetNamedString("source"));
