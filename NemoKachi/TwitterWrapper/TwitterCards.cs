@@ -181,13 +181,13 @@ namespace NemoKachi.TwitterWrapper
                         {
                             String title = FindValue(metaelements, "twitter:title", "og:title");
                             if (title != null)
-                                card.Title = WrapText(title, 70);
+                                card.Title = WrapText(Windows.Data.Html.HtmlUtilities.ConvertToText(title), 70);
                         }
                         {
                             String description = FindValue(metaelements, "twitter:description", "og:description");
                             if (description != null)
                             {
-                                card.Description = WrapText(description, 200);
+                                card.Description = WrapText(Windows.Data.Html.HtmlUtilities.ConvertToText(description), 200);
                             }
                         }
                         card.Image = FindValue(metaelements, "twitter:image", "og:image");
@@ -409,7 +409,13 @@ namespace NemoKachi.TwitterWrapper
                 if (target.Length <= maxLength)
                     return target;
                 else
-                    return target.Remove(maxLength - 3) + "...";
+                {
+                    Int32 lastWordIndex = maxLength - 3;
+                    while (!CharCompare(target[lastWordIndex], (Char)0x09, (Char)0x0A, (Char)0x0C, (Char)0x0D, (Char)0x20))
+                        lastWordIndex--;
+
+                    return target.Remove(lastWordIndex) + "...";
+                }
             }
 
             static String FindValue(SortedDictionary<String, String> dict, params String[] possibleNames)
