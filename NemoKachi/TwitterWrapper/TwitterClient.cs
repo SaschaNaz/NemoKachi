@@ -622,7 +622,7 @@ namespace NemoKachi.TwitterWrapper
             return await OAuthRequestAsync(aToken, reqMethod, baseUrl, twRequest, null, completionOption);
         }
 
-        public async Task<HttpResponseMessage> OAuthRequestAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterParameter twRequest, String callbackUri, HttpCompletionOption completionOption)
+        public String CreateOAuthHeader(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterParameter twRequest, String callbackUri)
         {
             const String oauth_version = "1.0";
             const String oauth_signature_method = "HMAC-SHA1";
@@ -707,6 +707,13 @@ namespace NemoKachi.TwitterWrapper
 
             System.Diagnostics.Debug.WriteLine(authHeader);
 
+            return authHeader;
+        }
+
+        public async Task<HttpResponseMessage> OAuthRequestAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterParameter twRequest, String callbackUri, HttpCompletionOption completionOption)
+        {
+            String authHeader = CreateOAuthHeader(aToken, reqMethod, baseUrl, twRequest, callbackUri);
+
             {
                 String querytotal = twRequest.GetQueryStringTotal();
                 if (querytotal != "")
@@ -732,83 +739,10 @@ namespace NemoKachi.TwitterWrapper
             }
         }
 
-        //public async Task<HttpResponseMessage> OAuthSocket(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterParameter twRequest)
+        //public async Task TestMethod1(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterParameter twRequest)
         //{
-        //    const String oauth_version = "1.0";
-        //    const String oauth_signature_method = "HMAC-SHA1";
-        //    String oauth_nonce = Convert.ToBase64String(new UTF8Encoding().GetBytes(DateTime.Now.Ticks.ToString()));
-        //    TimeSpan timeSpan = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        //    String oauth_timestamp = Convert.ToInt64(timeSpan.TotalSeconds).ToString();
-
-        //    List<String> baseStringList = new List<String>();
-        //    baseStringList.Add("oauth_consumer_key=" + oauth_consumer_key);
-        //    baseStringList.Add("oauth_nonce=" + oauth_nonce);
-        //    baseStringList.Add("oauth_signature_method=" + oauth_signature_method);
-        //    baseStringList.Add("oauth_timestamp=" + oauth_timestamp);
-        //    if (aToken.oauth_token != null)
-        //    {
-        //        baseStringList.Add("oauth_token=" + aToken.oauth_token);
-        //    }
-        //    baseStringList.Add("oauth_version=" + oauth_version);
-
-
-        //    String baseString = String.Concat(reqMethod, "&", Uri.EscapeDataString(baseUrl));
-        //    {
-        //        String AddString = "";
-        //        {
-        //            String query1 = twRequest.GetQueryStringPart1();
-        //            if (query1 != "")
-        //            {
-        //                AddString += query1;
-        //            }
-        //        }
-        //        if (AddString != "")
-        //        {
-        //            AddString += '&';
-        //        }
-        //        AddString += String.Join("&", baseStringList);
-        //        {
-        //            String postquery = twRequest.GetPostQueryString();
-        //            if (postquery != "")
-        //            {
-        //                AddString += '&' + postquery;
-        //            }
-        //        }
-        //        {
-        //            String query2 = twRequest.GetQueryStringPart2();
-        //            if (query2 != "")
-        //            {
-        //                AddString += '&' + query2;
-        //            }
-        //        }
-        //        baseString += '&' + Uri.EscapeDataString(AddString);
-        //    }
-        //    System.Diagnostics.Debug.WriteLine(baseString);
-
-        //    String compositeKey = Uri.EscapeDataString(oauth_consumer_secret) + "&";
-        //    if (aToken.oauth_token_secret != null)
-        //    {
-        //        compositeKey += Uri.EscapeDataString(aToken.oauth_token_secret);
-        //    }
-
-        //    String oauth_signature = HMAC_SHA1Hasher(baseString, compositeKey);
-
-        //    List<String> headerStringList = new List<String>();
-        //    headerStringList.Add(String.Format("oauth_nonce=\"{0}\"", Uri.EscapeDataString(oauth_nonce)));
-        //    headerStringList.Add(String.Format("oauth_signature_method=\"{0}\"", Uri.EscapeDataString(oauth_signature_method)));
-        //    headerStringList.Add(String.Format("oauth_timestamp=\"{0}\"", Uri.EscapeDataString(oauth_timestamp)));
-        //    headerStringList.Add(String.Format("oauth_consumer_key=\"{0}\"", Uri.EscapeDataString(oauth_consumer_key)));
-        //    if (aToken.oauth_token != null)
-        //    {
-        //        headerStringList.Add("oauth_token" + String.Format("=\"{0}\"", Uri.EscapeDataString(aToken.oauth_token)));
-        //    }
-        //    headerStringList.Add(String.Format("oauth_signature=\"{0}\"", Uri.EscapeDataString(oauth_signature)));
-        //    headerStringList.Add(String.Format("oauth_version=\"{0}\"", Uri.EscapeDataString(oauth_version)));
-
-        //    String authHeader = "OAuth " + String.Join(", ", headerStringList);
-
-        //    System.Diagnostics.Debug.WriteLine(authHeader);
-
+        //    #region authorization
+        //    String authHeader = CreateOAuthHeader(aToken, reqMethod, baseUrl, twRequest, null);
         //    {
         //        String querytotal = twRequest.GetQueryStringTotal();
         //        if (querytotal != "")
@@ -816,57 +750,163 @@ namespace NemoKachi.TwitterWrapper
         //            baseUrl += '?' + querytotal;
         //        }
         //    }
-
-        //    //Windows.Networking.Sockets.StreamSocket socket = new Windows.Networking.Sockets.StreamSocket();
-
-        //    //System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
-        //    //cts.CancelAfter(5000);
-
-
         //    HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl);
+        //    String postquery = twRequest.GetPostQueryString();
+        //    if (postquery != "")
         //    {
-        //        String postquery = twRequest.GetPostQueryString();
-        //        if (postquery != "")
-        //        {
-        //            httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
-        //        }
+        //        httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
         //    }
-
         //    httpRequestMessage.Headers.Add("Authorization", authHeader);
         //    httpRequestMessage.Headers.UserAgent.Add(UserAgent);
-        //    using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip }) { Timeout = new TimeSpan(0, 0, 5) })
+        //    #endregion
+
+        //    System.Diagnostics.Debug.WriteLine("Connection start");
+        //    await TestMethod2(httpRequestMessage);
+
+        //    System.Diagnostics.Debug.WriteLine("Stream successfully cancelled");
+        //}
+
+
+        //public async Task TestMethod2(HttpRequestMessage httpRequestMessage)
+        //{
+        //    using (HttpClient httpClient = new HttpClient())
         //    {
-        //        while (true)
+        //        using (HttpResponseMessage response = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead))
         //        {
-        //            HttpResponseMessage response = null;
-        //            try
+        //            using (var stream = await response.Content.ReadAsStreamAsync())
         //            {
-        //                response = await httpClientTemp.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+        //                //do something with the stream
         //            }
-        //            catch (TimeoutException)
-        //            {
-        //                Int32 Timeout = httpClientTemp.Timeout.Seconds * 2;
-        //                if (Timeout < 270)
-        //                {
-        //                    if (Timeout < 30)
-        //                    {
-        //                        httpClientTemp.Timeout = new TimeSpan(0, 0, 30);
-        //                    }
-        //                    else
-        //                    {
-        //                        httpClientTemp.Timeout = new TimeSpan(0, 0, httpClientTemp.Timeout.Seconds * 2);
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    httpClientTemp.Timeout = new TimeSpan(0, 4, 30);
-        //                }
-        //            }
-        //            //(await response.Content.ReadAsStreamAsync()).ReadTimeout = 90000;
-        //            return response;
         //        }
         //    }
         //}
+
+        //https://dev.twitter.com/docs/streaming-apis/connecting
+        public IAsyncActionWithProgress<Object> OAuthStreamConnectAsync(AccountToken aToken, HttpMethod reqMethod, String baseUrl, TwitterParameter twRequest)
+        {
+            return System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run(async delegate(System.Threading.CancellationToken cancellationToken, IProgress<Object> progress)
+            {
+                Int32 Timeout = 5000;
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    Boolean ConnectionFailed = false;
+                    try
+                    {
+                        #region authorization
+                        String authHeader = CreateOAuthHeader(aToken, reqMethod, baseUrl, twRequest, null);
+                        {
+                            String querytotal = twRequest.GetQueryStringTotal();
+                            if (querytotal != "")
+                            {
+                                baseUrl += '?' + querytotal;
+                            }
+                        }
+                        using (HttpRequestMessage httpRequestMessage = new HttpRequestMessage(reqMethod, baseUrl))
+                        {
+                            String postquery = twRequest.GetPostQueryString();
+                            if (postquery != "")
+                            {
+                                httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
+                            }
+                            httpRequestMessage.Headers.Add("Authorization", authHeader);
+                            httpRequestMessage.Headers.UserAgent.Add(UserAgent);
+                        #endregion
+
+                            System.Diagnostics.Debug.WriteLine("Connection start");
+                            await ConnectSocket(httpRequestMessage, new TimeSpan(0, 0, 5), cancellationToken, progress);
+                        }
+                    }
+                    catch (System.IO.IOException)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Stream disconnected");
+                    }
+                    catch (HttpRequestException)//이 때는 GET 자체가 실패한 것
+                    {
+                        ConnectionFailed = true;
+                        System.Diagnostics.Debug.WriteLine("Stream connection failed");
+                    }
+                    //TimeoutException이 나면, 다시 연결 시도하려고 하지 말고 나중에 다시 연결 시도하도록 설득하기. Boolean false로 return값 보내기 (IAsyncOperation으로 수정)
+
+                    if (ConnectionFailed)
+                    {
+                        if (Timeout <= 15000)
+                        {
+                            Timeout *= 2;
+                        }
+                        else
+                            Timeout = 30000;
+                    }
+                    else
+                        Timeout = 5000;
+
+                    System.Diagnostics.Debug.WriteLine(String.Format("Wait {0} seconds and reconnect if not cancelled", Timeout / 1000));
+                    await Task.Delay(Timeout);
+                }
+
+                System.Diagnostics.Debug.WriteLine("Stream successfully cancelled");
+            });
+        }
+
+        async Task ConnectSocket(HttpRequestMessage httpRequestMessage, TimeSpan timeout, System.Threading.CancellationToken cancellationToken, IProgress<Object> progress)
+        {
+            
+            using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip }) { Timeout = timeout })
+            {
+                using (HttpResponseMessage response = await httpClientTemp.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead))
+                {
+                    if (!response.IsSuccessStatusCode)
+                        return;
+
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        List<Char> list = new List<Char>();
+                        while (!cancellationToken.IsCancellationRequested)
+                        {
+                            Byte[] buffer = new Byte[1000];
+                            await stream.ReadAsync(buffer, 0, 1000);
+                            foreach (Byte b in buffer)
+                            {
+                                Char ch = (Char)b;
+                                switch (ch)
+                                {
+                                    case '\r':
+                                        {
+                                            if (list.Count > 0)
+                                            {
+                                                String str = new String(list.ToArray());
+                                                try
+                                                {
+                                                    progress.Report(JsonObject.Parse(str));
+                                                }
+                                                catch
+                                                {
+                                                    System.Diagnostics.Debug.WriteLine("ERROR", str);
+                                                    //textBlock1.Text += "UserStream: ERROR Ocurred";
+                                                }
+                                                list.Clear();
+                                            }
+                                            break;
+                                        }
+                                    case '\n':
+                                    case '\0':
+                                        {
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            list.Add(ch);
+                                            break;
+                                        }
+                                }
+                            }
+                        }
+                    }
+
+                    System.Diagnostics.Debug.WriteLine("Stream reading finished");
+                }
+            }
+        }
+
 
         //public enum UserStreamingState
         //{

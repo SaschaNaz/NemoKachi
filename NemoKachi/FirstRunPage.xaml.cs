@@ -42,7 +42,7 @@ namespace NemoKachi
                 }
                 catch (System.Net.Http.HttpRequestException)
                 {
-                    ErrorMessage = "Our magpie cannot dive into the internet. Please check your connection.";
+                    ErrorMessage = "Our magpie cannot fly to the internet. Please check if your internet connection blocks the sky!";
                 }
                 catch (TaskCanceledException)
                 {

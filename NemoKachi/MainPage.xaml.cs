@@ -246,6 +246,43 @@ namespace NemoKachi
                 await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
         }
 
+        IAsyncActionWithProgress<Object> streamAction;
+        private async void UserStreamTemporary(object sender, RoutedEventArgs e)
+        {
+            //AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+            //TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterClient;
+
+            //await MainClient.OAuthStreamConnectAsync(collector.TokenCollection[0], System.Net.Http.HttpMethod.Get, "https://userstream.twitter.com/2/user.json", new TwitterParameter());
+            if (streamAction == null)
+            {
+                AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+                TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterClient;
+                TweetStorage house = Application.Current.Resources["TweetHouse"] as TweetStorage;
+
+                Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog("Do you want to start a user stream?");
+                dialog.Commands.Add(new Windows.UI.Popups.UICommand("Start", null, "Yes"));
+                dialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel", null, "No"));
+                dialog.CancelCommandIndex = 1;
+                String resultId = (String)(await dialog.ShowAsync()).Id;
+                if (resultId == "Yes")
+                {
+                    streamAction = MainClient.OAuthStreamConnectAsync(collector.TokenCollection[0], System.Net.Http.HttpMethod.Get, "https://userstream.twitter.com/2/user.json", new TwitterParameter());
+                    streamAction.Progress += (_, p) =>
+                        {
+                            System.Diagnostics.Debug.WriteLine((p as Windows.Data.Json.IJsonValue).Stringify());
+                        };
+                    await streamAction;
+                }
+            }
+            else
+            {
+                streamAction.Cancel();
+                streamAction = null;
+            }
+        }
+
+        
+
         private async void GetCardTemporary(object sender, RoutedEventArgs e)
         {
             String message = null;
