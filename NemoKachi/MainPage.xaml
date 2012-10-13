@@ -46,6 +46,11 @@
             
             <StackPanel Margin="0,0,23,6" HorizontalAlignment="Right" VerticalAlignment="Bottom">
                 <Grid Width="270" Height="32" Margin="3">
+                    <TextBlock Text="StartStream" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
+                    <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="UserStreamTemporary" />
+                </Grid>
+                
+                <Grid Width="270" Height="32" Margin="3">
                     <TextBlock Text="GetCard" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,160,0" />
                     <TextBox x:Name="cardBox" Margin="120,0,40,0" />
                     <Button HorizontalAlignment="Right" Width="40" VerticalAlignment="Stretch" Click="GetCardTemporary" />
