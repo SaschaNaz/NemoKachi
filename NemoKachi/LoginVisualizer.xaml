@@ -5,64 +5,21 @@
     xmlns:local="using:NemoKachi"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    d:DesignHeight="200"
+    d:DesignWidth="400"
+    >
     
     <UserControl.Resources>
         <local:LoginphaseStringConverter x:Key="loginphaseStringConverter" />
     </UserControl.Resources>
     
-    <Grid Background="#4C000000">
-        <Grid x:Name="LayoutRoot" Grid.RowSpan="2" MaxHeight="680" Background="White"  >
-            <Grid x:Name="MainLayout" Grid.RowSpan="2" MaxWidth="800" Margin="200,0,200,0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <ProgressRing HorizontalAlignment="Center" Foreground="#FF00A2FF" VerticalAlignment="Bottom" Width="100" Height="100"  IsActive="True"  />
-                    <TextBlock Grid.Row="1" Foreground="Black" Margin="0,50,0,0" x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
-                </Grid>
-                <Grid>
-                    <Grid.Resources>
-                        <Storyboard x:Name="WebViewStart">
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="webviewGrid" Storyboard.TargetProperty="Visibility">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="Visible"/>
-                            </ObjectAnimationUsingKeyFrames>
-                            <DoubleAnimation Storyboard.TargetName="webRefreshButton"
-                                         Storyboard.TargetProperty="Opacity"
-                                         From="0.0" To="1.0" Duration="0:0:0.5" />
-                        </Storyboard>
-                        <Storyboard x:Name="WebViewEnd">
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="webRefreshButton" Storyboard.TargetProperty="Opacity">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="0"/>
-                            </ObjectAnimationUsingKeyFrames>
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="webviewGrid" Storyboard.TargetProperty="Visibility">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
-                            </ObjectAnimationUsingKeyFrames>
-                        </Storyboard>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="100" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                        <Button Content="&#xE10A;" Style="{StaticResource IconDarkButtonStyle}" FontSize="25" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,10,30" Click="Button_Click" />
-                        <TextBlock Grid.Column="1" Text="Twitter Authentication" Style="{StaticResource SnappedPageHeaderTextStyle}" Foreground="Black"  VerticalAlignment="Bottom"  />
-                    <Grid Grid.Row="1" Grid.Column="1" x:Name="webviewGrid" Visibility="Collapsed" >
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <TextBlock x:Name="authText" Text="Please give the authorization letter to your magpie!" Foreground="Black" FontSize="20" VerticalAlignment="Bottom" TextWrapping="Wrap"  />
-                        <Rectangle Grid.Row="1" Margin="0,15,0,20" Fill="Lavender" />
-                        <Button x:Name="webRefreshButton" Grid.Row="1" Style="{StaticResource IconDarkButtonStyle}" VerticalAlignment="Top" Content="&#xE117;" FontSize="40" Margin="0,30" Opacity="0" />
-                        <WebView Grid.Row="1" x:Name="webView1" Margin="50,20,5,25" />
-                    </Grid>
-                </Grid>
-            </Grid>
-        </Grid>
+    <Grid x:Name="LayoutRoot" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ProgressRing HorizontalAlignment="Center" Foreground="#FF00A2FF" VerticalAlignment="Bottom" Width="100" Height="100"  IsActive="True"  />
+        <TextBlock Grid.Row="1" Margin="0,50,0,0" x:Name="messageBlock" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top" Text="{Binding Phase, Converter={StaticResource loginphaseStringConverter}}" />
     </Grid>
 </UserControl>
