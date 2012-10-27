@@ -31,7 +31,7 @@ namespace NemoKachi
 
         async void Login()
         {
-            TwitterClient.LoginHandler lhandler = new TwitterClient.LoginHandler(Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient, lvisual, "http://ao-k-ilapis.kr/");
+            LoginHandler lhandler = new LoginHandler(Application.Current.Resources["MainClient"] as TwitterWrapper.TwitterClient, lvisual, "http://ao-k-ilapis.kr/");
             AccountToken loginArgs = null;
             while (loginArgs == null)
             {

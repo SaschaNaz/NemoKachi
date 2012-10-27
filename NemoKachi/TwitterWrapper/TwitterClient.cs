@@ -122,18 +122,6 @@ namespace NemoKachi.TwitterWrapper
             return String.Join("", returner);
         }
 
-        static Dictionary<String, String> HTTPQuery(String query)
-        {
-            Dictionary<String, String> returner = new Dictionary<String, String>();
-            String[] tempparams1 = query.Split('&');
-            for (Int32 i = 0; i < tempparams1.Length && tempparams1[i].Length != 0; i++)
-            {
-                String[] tempparams2 = tempparams1[i].Split('=');
-                returner.Add(tempparams2[0], tempparams2[1]);
-            }
-            return returner;
-        }
-
         public Exception TwitterExceptionParse(System.Net.HttpStatusCode errorcode, Windows.Data.Json.JsonObject errorobject)
         {
             IJsonValue errors;
@@ -703,7 +691,7 @@ namespace NemoKachi.TwitterWrapper
             headerStringList.Add(String.Format("oauth_signature=\"{0}\"", Uri.EscapeDataString(oauth_signature)));
             headerStringList.Add(String.Format("oauth_version=\"{0}\"", Uri.EscapeDataString(oauth_version)));
 
-            String authHeader = "OAuth " + String.Join(", ", headerStringList);
+            String authHeader = String.Join(", ", headerStringList);
 
             System.Diagnostics.Debug.WriteLine(authHeader);
 
@@ -731,7 +719,7 @@ namespace NemoKachi.TwitterWrapper
                 }
             }
 
-            httpRequestMessage.Headers.Add("Authorization", authHeader);
+            httpRequestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("OAuth", authHeader);
             httpRequestMessage.Headers.UserAgent.Add(UserAgent);
             using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false }))//{ Timeout = new TimeSpan(0, 0, 10) }
             {
@@ -808,7 +796,7 @@ namespace NemoKachi.TwitterWrapper
                             {
                                 httpRequestMessage.Content = new StringContent(postquery, Encoding.UTF8, "application/x-www-form-urlencoded");
                             }
-                            httpRequestMessage.Headers.Add("Authorization", authHeader);
+                            httpRequestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("OAuth", authHeader);
                             httpRequestMessage.Headers.UserAgent.Add(UserAgent);
                         #endregion
 
@@ -850,9 +838,9 @@ namespace NemoKachi.TwitterWrapper
         async Task ConnectSocket(HttpRequestMessage httpRequestMessage, TimeSpan timeout, System.Threading.CancellationToken cancellationToken, IProgress<Object> progress)
         {
             
-            using (HttpClient httpClientTemp = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip }) { Timeout = timeout })
+            using (HttpClient httpClient = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip }) { Timeout = timeout })
             {
-                using (HttpResponseMessage response = await httpClientTemp.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead))
+                using (HttpResponseMessage response = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead))
                 {
                     if (!response.IsSuccessStatusCode)
                         return;
@@ -900,6 +888,8 @@ namespace NemoKachi.TwitterWrapper
                                 }
                             }
                         }
+
+                        //bug - dispose won't end until the connection destroyed
                     }
 
                     System.Diagnostics.Debug.WriteLine("Stream reading finished");

@@ -24,25 +24,25 @@ namespace NemoKachi
             if (value == null)
                 throw new ArgumentNullException("value", "Value cannot be null.");
 
-            if (!typeof(TwitterClient.LoginPhase).Equals(value.GetType()))
+            if (!typeof(LoginPhase).Equals(value.GetType()))
                 throw new ArgumentException("Value must be of type (TwitterClient.LoginPhase).", "value");
 
-            TwitterClient.LoginPhase phase = (TwitterClient.LoginPhase)value;
+            LoginPhase phase = (LoginPhase)value;
             var loader = new Windows.ApplicationModel.Resources.ResourceLoader();
 
             switch (phase)
             {
-                case TwitterClient.LoginPhase.WaitingOAuthCallback:
+                case LoginPhase.WaitingOAuthCallback:
                     return loader.GetString("WaitingOAuthCallback");
-                case TwitterClient.LoginPhase.AuthorizingApp:
+                case LoginPhase.AuthorizingApp:
                     return loader.GetString("AuthorizingApp");
-                case TwitterClient.LoginPhase.VerifyingTempToken:
+                case LoginPhase.VerifyingTempToken:
                     return loader.GetString("VerifyingTempToken");
-                case TwitterClient.LoginPhase.AccessingToken:
+                case LoginPhase.AccessingToken:
                     return loader.GetString("AccessingToken");
-                case TwitterClient.LoginPhase.LoadingAccountInformation:
+                case LoginPhase.LoadingAccountInformation:
                     return loader.GetString("LoadingAccountInformation");
-                case TwitterClient.LoginPhase.GettingAccountImageURI:
+                case LoginPhase.GettingAccountImageURI:
                     return loader.GetString("GettingAccountImageURI");
                 default:
                     return loader.GetString("(Error)");
@@ -55,18 +55,18 @@ namespace NemoKachi
         }
     }
 
-    public partial class LoginVisualizer : UserControl, TwitterClient.ILoginVisualizer
+    public partial class LoginVisualizer : UserControl, ILoginVisualizer
     {
         public static readonly DependencyProperty PhaseProperty =
             DependencyProperty.Register(
             "Phase",
-            typeof(TwitterClient.LoginPhase),
-            typeof(LoginVisualizer), new PropertyMetadata(TwitterClient.LoginPhase.WaitingOAuthCallback));
+            typeof(LoginPhase),
+            typeof(LoginVisualizer), new PropertyMetadata(LoginPhase.WaitingOAuthCallback));
 
-        public TwitterClient.LoginPhase Phase
+        public LoginPhase Phase
         {
-            get { return (TwitterClient.LoginPhase)GetValue(PhaseProperty); }
-            set { SetValue(PhaseProperty, (TwitterClient.LoginPhase)value); }
+            get { return (LoginPhase)GetValue(PhaseProperty); }
+            set { SetValue(PhaseProperty, (LoginPhase)value); }
         }
 
         public event RoutedEventHandler Closed;
@@ -82,34 +82,6 @@ namespace NemoKachi
         {
             this.InitializeComponent();
             DataContext = this;
-            Closed += LoginVisualizer_Closed;
-        }
-
-        void LoginVisualizer_Closed(object sender, RoutedEventArgs e)
-        {
-            RemoveWebView();
-        }
-
-        public WebView GetWebView()
-        {
-            return webView1;
-        }
-
-        public Boolean IsWebViewSet { get; private set; }
-
-        public void SetWebView()
-        {
-            IsWebViewSet = true;
-            WebViewStart.Begin();
-            //webviewGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
-        }
-
-        public void RemoveWebView()
-        {
-            IsWebViewSet = false;
-            WebViewEnd.Begin();
-            //WebViewStoryboard.
-            //webviewGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
