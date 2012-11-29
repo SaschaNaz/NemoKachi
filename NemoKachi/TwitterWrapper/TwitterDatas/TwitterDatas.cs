@@ -15,6 +15,18 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         DateTime GetPublishedTime();
     }
 
+    //...이거 쓰지 말고 그냥 각각 파싱할 때 에러처리 해 줘도 되는데... 어차피 이거 써도 에러처리 해야 되고 
+    //public class TwitterDataParseException : Exception
+    //{
+    //    public JsonObject JsonData { get; private set; }
+
+    //    public TwitterDataParseException(JsonObject data)
+    //        : base()
+    //    {
+    //        JsonData = data;
+    //    }
+    //}
+
     //public struct KnownDeleteEvent//이걸로 여러 개 만든 뒤에 TextMessage constructor 여러 개 만들기
     //{
     //    public readonly TwitterUser User;
@@ -126,35 +138,6 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
             }
         }
 
-        //public TwitterUser GetUser()
-        //{
-        //    return new TwitterUser(JsonData.GetNamedObject("user"));
-        //}
-
-        //public Tweet GetRetweetedTweet()
-        //{
-        //    try { return new Tweet(JsonData.GetNamedObject("retweeted_status")); }
-        //    catch { return null; }
-        //}
-
-        //public TwitterEntities GetTwitterEntities()
-        //{
-        //    return new TwitterEntities(JsonData.GetNamedObject("TwitterEntities"));
-        //}
-
-        //public String GetText()
-        //{
-        //    return Uri.UnescapeDataString(JsonData.GetNamedString("text"));
-        //}
-
-        //public DateTime GetPublishedTime()
-        //{
-        //    return TwitterClient.ConvertToDateTime(JsonData.GetNamedString("created_at"));
-        //}
-        //public UInt64 GetId()
-        //{
-        //    return Convert.ToUInt64(JsonData.GetNamedString("id_str"));
-        //}
         public String GetClientName(String ParsedString)
         {
             if (ParsedString[0] == '<')//The required conditon to check if it can be parsed.
@@ -202,270 +185,268 @@ namespace NemoKachi.TwitterWrapper.TwitterDatas
         //    }
         //}
 
-        public struct TwitterEntities //https://dev.twitter.com/docs/tweet-TwitterEntities
+    }
+
+    public struct TwitterEntities //https://dev.twitter.com/docs/tweet-TwitterEntities
+    {
+        public readonly Hashtag[] Hashtags;
+        public readonly UserMention[] UserMentions;
+        public readonly Url[] Urls;
+        public readonly TweetMedia[] Media;
+
+        public TwitterEntities(JsonObject jsob)
         {
-            public readonly Hashtag[] Hashtags;
-            public readonly UserMention[] UserMentions;
-            public readonly Url[] Urls;
-            public readonly TweetMedia[] Media;
-
-            public TwitterEntities(JsonObject jsob)
+            JsonArray jary = jsob.GetNamedArray("hashtags");
+            Hashtags = new Hashtag[jary.Count];
+            for (Int32 i = 0; i < Hashtags.Length; i++)
             {
-                JsonArray jary = jsob.GetNamedArray("hashtags");
-                Hashtags = new Hashtag[jary.Count];
-                for (Int32 i = 0; i < Hashtags.Length; i++)
-                {
-                    Hashtags[i] = new Hashtag(jary[i].GetObject());
-                }
-                jary = jsob.GetNamedArray("user_mentions");
-                UserMentions = new UserMention[jary.Count];
-                for (Int32 i = 0; i < UserMentions.Length; i++)
-                {
-                    UserMentions[i] = new UserMention(jary[i].GetObject());
-                }
-                jary = jsob.GetNamedArray("urls");
-                Urls = new Url[jary.Count];
-                for (Int32 i = 0; i < Urls.Length; i++)
-                {
-                    Urls[i] = new Url(jary[i].GetObject());
-                }
+                Hashtags[i] = new Hashtag(jary[i].GetObject());
+            }
+            jary = jsob.GetNamedArray("user_mentions");
+            UserMentions = new UserMention[jary.Count];
+            for (Int32 i = 0; i < UserMentions.Length; i++)
+            {
+                UserMentions[i] = new UserMention(jary[i].GetObject());
+            }
+            jary = jsob.GetNamedArray("urls");
+            Urls = new Url[jary.Count];
+            for (Int32 i = 0; i < Urls.Length; i++)
+            {
+                Urls[i] = new Url(jary[i].GetObject());
+            }
 
+            {
+                IJsonValue value;
+                if (jsob.TryGetValue("media", out value))
                 {
-                    IJsonValue value;
-                    if (jsob.TryGetValue("media", out value))
+                    Media = new TweetMedia[value.GetArray().Count];
+                    for (Int32 i = 0; i < Media.Length; i++)
                     {
-                        Media = new TweetMedia[value.GetArray().Count];
-                        for (Int32 i = 0; i < Media.Length; i++)
-                        {
-                            Media[i] = new TweetMedia(value.GetArray()[i].GetObject());
-                        }
-                    }
-                    else
-                    {
-                        Media = null;
+                        Media[i] = new TweetMedia(value.GetArray()[i].GetObject());
                     }
                 }
-            }
-        }
-        public struct Hashtag
-        {
-            public readonly Int32[] Indices;
-            public readonly String Text;
-
-            public Hashtag(JsonObject jsob)
-            {
-                Indices = new Int32[2];
-                Text = jsob.GetNamedString("text");
-                JsonArray jary = jsob.GetNamedArray("indices");
-                for (Int32 i = 0; i < 2; i++)
+                else
                 {
-                    Indices[i] = (Int32)jary[i].GetNumber();
-                }
-            }
-        }
-        public struct UserMention
-        {
-            public readonly Int32[] Indices;
-            public readonly String Name;
-            public readonly String ScreenName;
-            public readonly UInt64 Id;
-
-            public UserMention(JsonObject jsob)
-            {
-                Indices = new Int32[2];
-                Id = Convert.ToUInt64(jsob.GetNamedString("id_str"));
-                Name = Uri.UnescapeDataString(jsob.GetNamedString("name"));
-                ScreenName = jsob.GetNamedString("screen_name");
-                JsonArray jary = jsob.GetNamedArray("indices");
-                for (Int32 i = 0; i < 2; i++)
-                {
-                    Indices[i] = (Int32)jary[i].GetNumber();
-                }
-            }
-        }
-        public struct TweetMedia
-        {
-            public enum MediaType
-            {
-                Photo, Unknown
-            }
-            public readonly MediaType Type;
-            public readonly String ExpandedUrl;
-            //public readonly String Url;
-            public readonly String MediaUrl;//Use HTTPS :)
-            public readonly UInt64 Id;
-            public readonly Int32[] Indices;
-            public readonly String DisplayUrl;
-            public readonly TweetMediaSizes MediaSizes;
-
-            public TweetMedia(JsonObject jsob)
-            {
-                Indices = new Int32[2];
-                {
-                    String type = jsob.GetNamedString("type");
-                    switch (type)
-                    {
-                        case "photo":
-                            {
-                                Type = MediaType.Photo;
-                                break;
-                            }
-                        default:
-                            {
-                                Type = MediaType.Unknown;
-                                break;
-                            }
-                    }
-                }
-                ExpandedUrl = jsob.GetNamedString("expanded_url");
-                MediaUrl = jsob.GetNamedString("media_url_https");
-                DisplayUrl = jsob.GetNamedString("display_url");
-                Id = Convert.ToUInt64(jsob.GetNamedString("id_str"));
-                MediaSizes = new TweetMediaSizes(jsob.GetNamedObject("sizes"));
-                JsonArray jary = jsob.GetNamedArray("indices");
-                for (Int32 i = 0; i < 2; i++)
-                {
-                    Indices[i] = (Int32)jary[i].GetNumber();
-                }
-            }
-
-            public struct TweetMediaSizes
-            {
-                public readonly MediaSize Small;
-                public readonly MediaSize Medium;
-                public readonly MediaSize Large;
-                public readonly MediaSize Thumb;
-
-                public TweetMediaSizes(JsonObject jsob)
-                {
-                    Small = new MediaSize(jsob.GetNamedObject("small"));
-                    Medium = new MediaSize(jsob.GetNamedObject("medium"));
-                    Large = new MediaSize(jsob.GetNamedObject("large"));
-                    Thumb = new MediaSize(jsob.GetNamedObject("thumb"));
-                }
-            }
-
-            public struct MediaSize
-            {
-                public enum ResizeStatus
-                {
-                    Fit, Crop
-                }
-                public readonly ResizeStatus SizeState;
-                public readonly Windows.Foundation.Size MediumSize;
-
-                public MediaSize(JsonObject jsob)
-                {
-                    MediumSize = new Windows.Foundation.Size(jsob.GetNamedNumber("w"), jsob.GetNamedNumber("h"));
-                    {
-                        String state = jsob.GetNamedString("resize");
-                        switch (state)
-                        {
-                            case "fit":
-                                {
-                                    SizeState = ResizeStatus.Fit;
-                                    break;
-                                }
-                            case "crop":
-                                {
-                                    SizeState = ResizeStatus.Crop;
-                                    break;
-                                }
-                            default:
-                                {
-                                    throw new Exception("Cannot recogsize the resize status of medium.");
-                                }
-                        }
-                    }
-                }
-            }
-        }
-        public struct Url
-        {
-            public readonly Int32[] Indices;
-            public readonly String LinkUrl;
-            public readonly String DisplayUrl;
-            public readonly String ExpandedUrl;
-            public Url(JsonObject jsob)
-            {
-                Indices = new Int32[2];
-                try
-                {
-                    DisplayUrl = jsob.GetNamedString("display_url");
-                    ExpandedUrl = jsob.GetNamedString("expanded_url");
-                    LinkUrl = null;
-                }
-                catch //before-tco tweets have no DisplayUrl or ExpandedUrl
-                {
-                    DisplayUrl = null;
-                    ExpandedUrl = null;
-                    LinkUrl = jsob.GetNamedString("url");
-                }
-                JsonArray jary = jsob.GetNamedArray("indices");
-                for (Int32 i = 0; i < 2; i++)
-                {
-                    Indices[i] = (Int32)jary[i].GetNumber();
+                    Media = null;
                 }
             }
         }
     }
 
+    public struct Hashtag
+    {
+        public readonly Int32[] Indices;
+        public readonly String Text;
+
+        public Hashtag(JsonObject jsob)
+        {
+            Indices = new Int32[2];
+            Text = jsob.GetNamedString("text");
+            JsonArray jary = jsob.GetNamedArray("indices");
+            for (Int32 i = 0; i < 2; i++)
+            {
+                Indices[i] = (Int32)jary[i].GetNumber();
+            }
+        }
+    }
+
+    public struct UserMention
+    {
+        public readonly Int32[] Indices;
+        public readonly String Name;
+        public readonly String ScreenName;
+        public readonly UInt64 Id;
+
+        public UserMention(JsonObject jsob)
+        {
+            Indices = new Int32[2];
+            Id = Convert.ToUInt64(jsob.GetNamedString("id_str"));
+            Name = Uri.UnescapeDataString(jsob.GetNamedString("name"));
+            ScreenName = jsob.GetNamedString("screen_name");
+            JsonArray jary = jsob.GetNamedArray("indices");
+            for (Int32 i = 0; i < 2; i++)
+            {
+                Indices[i] = (Int32)jary[i].GetNumber();
+            }
+        }
+    }
+
+    public struct TweetMedia
+    {
+        public enum MediaType
+        {
+            Photo, Unknown
+        }
+        public readonly MediaType Type;
+        public readonly String ExpandedUrl;
+        //public readonly String Url;
+        public readonly String MediaUrl;//Use HTTPS :)
+        public readonly UInt64 Id;
+        public readonly Int32[] Indices;
+        public readonly String DisplayUrl;
+        public readonly TweetMediaSizes MediaSizes;
+
+        public TweetMedia(JsonObject jsob)
+        {
+            Indices = new Int32[2];
+            {
+                String type = jsob.GetNamedString("type");
+                switch (type)
+                {
+                    case "photo":
+                        {
+                            Type = MediaType.Photo;
+                            break;
+                        }
+                    default:
+                        {
+                            Type = MediaType.Unknown;
+                            break;
+                        }
+                }
+            }
+            ExpandedUrl = jsob.GetNamedString("expanded_url");
+            MediaUrl = jsob.GetNamedString("media_url_https");
+            DisplayUrl = jsob.GetNamedString("display_url");
+            Id = Convert.ToUInt64(jsob.GetNamedString("id_str"));
+            MediaSizes = new TweetMediaSizes(jsob.GetNamedObject("sizes"));
+            JsonArray jary = jsob.GetNamedArray("indices");
+            for (Int32 i = 0; i < 2; i++)
+            {
+                Indices[i] = (Int32)jary[i].GetNumber();
+            }
+        }
+
+        public struct TweetMediaSizes
+        {
+            public readonly MediaSize Small;
+            public readonly MediaSize Medium;
+            public readonly MediaSize Large;
+            public readonly MediaSize Thumb;
+
+            public TweetMediaSizes(JsonObject jsob)
+            {
+                Small = new MediaSize(jsob.GetNamedObject("small"));
+                Medium = new MediaSize(jsob.GetNamedObject("medium"));
+                Large = new MediaSize(jsob.GetNamedObject("large"));
+                Thumb = new MediaSize(jsob.GetNamedObject("thumb"));
+            }
+        }
+
+        public struct MediaSize
+        {
+            public enum ResizeStatus
+            {
+                Fit, Crop
+            }
+            public readonly ResizeStatus SizeState;
+            public readonly Windows.Foundation.Size MediumSize;
+
+            public MediaSize(JsonObject jsob)
+            {
+                MediumSize = new Windows.Foundation.Size(jsob.GetNamedNumber("w"), jsob.GetNamedNumber("h"));
+                {
+                    String state = jsob.GetNamedString("resize");
+                    switch (state)
+                    {
+                        case "fit":
+                            {
+                                SizeState = ResizeStatus.Fit;
+                                break;
+                            }
+                        case "crop":
+                            {
+                                SizeState = ResizeStatus.Crop;
+                                break;
+                            }
+                        default:
+                            {
+                                throw new Exception("Cannot recogsize the resize status of medium.");
+                            }
+                    }
+                }
+            }
+        }
+    }
+    public struct Url
+    {
+        public readonly Int32[] Indices;
+        public readonly String LinkUrl;
+        public readonly String DisplayUrl;
+        public readonly String ExpandedUrl;
+        public Url(JsonObject jsob)
+        {
+            Indices = new Int32[2];
+            try
+            {
+                DisplayUrl = jsob.GetNamedString("display_url");
+                ExpandedUrl = jsob.GetNamedString("expanded_url");
+                LinkUrl = null;
+            }
+            catch //before-tco tweets have no DisplayUrl or ExpandedUrl
+            {
+                DisplayUrl = null;
+                ExpandedUrl = null;
+                LinkUrl = jsob.GetNamedString("url");
+            }
+            JsonArray jary = jsob.GetNamedArray("indices");
+            for (Int32 i = 0; i < 2; i++)
+            {
+                Indices[i] = (Int32)jary[i].GetNumber();
+            }
+        }
+    }
+
+    //https://dev.twitter.com/docs/platform-objects/users
     public class TwitterUser
     {
-        //readonly JsonObject JsonData;
-        //public String JsonMessage
-        //{
-        //    get { return JsonData.Stringify(); }
-        //}
-
         public TwitterUser(JsonObject jo)
         {
-            ProfileImageUrl = new Uri(jo.GetNamedString("profile_image_url_https"));
+            CreatedAt = TwitterClient.ConvertToDateTime(jo.GetNamedString("created_at"));
+            FavouritesCount = (UInt32)jo.GetNamedNumber("favourites_count");
             Id = Convert.ToUInt64(jo.GetNamedString("id_str"));
             Name = jo.GetNamedString("name");
+            ProfileImageUrl = new Uri(jo.GetNamedString("profile_image_url_https"));
             ScreenName = jo.GetNamedString("screen_name");
         }
 
-        //public Boolean IsDefaultProfileImage;
-        //public Int64 StatusesCount;
-        //public Boolean IsVerified;
-        //public String Location;
-        //public Boolean ShowAllInlineMedia;
-        //public Nullable<Boolean> IsFollowRequestSent;
-        //public Int64 FavouritesCount;
-        //public Windows.UI.Xaml.Media.Color ProfileLinkColor;
-        //public Nullable<Boolean> IsFollowing;
-        //public Uri ProfileBackgroundImageUrl;//plz get HTTPS uri
-        //public Nullable<Boolean> Notifications;
-        //public String TimeZone;
-        //public Windows.UI.Xaml.Media.Color ProfileBackgroundColor;
-        public Uri ProfileImageUrl { get; set; }//HTTPS too
-        //public String Description;
         //public Boolean IsContributorsEnabled;
-        //public Boolean IsProfileBackgroundTile;
-        //public Int64 FriendsCount;
-        //public Int64 ListedCount;
-        //public DateTime CreatedAt;
-        //public Windows.UI.Xaml.Media.Color ProfileSidebarFillColor;
-        //public Boolean IsTranslator;
-        //public Int64 FollowersCount;
+        public DateTime CreatedAt { get; set; }
         //public Boolean IsDefaultProfile;
-        //public Windows.UI.Xaml.Media.Color ProfileSidebarBorderColor;
-        //public Boolean IsProtected;
-        public UInt64 Id { get; set; }
-        //public Uri Url;
-        public String Name { get; set; }
-        //public Boolean IsProfileUseBackgroundImage;
-        //public String Language;
+        //public Boolean IsDefaultProfileImage;
+        //public String Description;
+        //public TwitterEntities AttachedEntities { get; private set; }
+        public UInt32 FavouritesCount { get; set; }
+        //public Nullable<Boolean> IsFollowRequestSent;
+        //public UInt32 FollowersCount;
+        //public UInt32 FriendsCount;
         //public Boolean IsGeoEnabled;
-        //public Int32 UtcOffset;
+        public UInt64 Id { get; set; }
+        //public Boolean IsTranslator;
+        //public String Language;
+        //public UInt32 ListedCount;
+        //public String Location;
+        public String Name { get; set; }
+        //public Windows.UI.Xaml.Media.Color ProfileBackgroundColor;
+        //public Uri ProfileBackgroundImageUrl;//plz get HTTPS uri
+        //public Boolean IsProfileBackgroundTile;
+        //public String ProfileBannerUrl;
+        public Uri ProfileImageUrl { get; set; }//HTTPS too
+        //public Windows.UI.Xaml.Media.Color ProfileLinkColor;
+        //public Windows.UI.Xaml.Media.Color ProfileSidebarBorderColor;
+        //public Windows.UI.Xaml.Media.Color ProfileSidebarFillColor;
         //public Windows.UI.Xaml.Media.Color ProfileTextColor;
+        //public Boolean IsProfileUseBackgroundImage;
+        //public Boolean IsProtected;
         public String ScreenName { get; set; }
-
-        //public TwitterUser MakeFromJsonObject(JsonObject jsob)
-        //{
-        //    TwitterUser twtuser = new TwitterUser();
-        //    return twtuser;
-        //}
+        //public Boolean ShowAllInlineMedia;
+        //public Tweet Status;
+        //public UInt32 StatusesCount;
+        //public String TimeZone;
+        //public Uri Url;
+        //public Int32 UtcOffset;
+        //public Boolean IsVerified;
+        //public String[] WithheldInCountries;
+        //public TwitterScope WithheldScope;//TwitterScope is 'status' or 'user'
     }
 }
