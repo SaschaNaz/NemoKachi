@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using NemoKachi.TwitterWrapper;
+using NemoKachi.TwitterWrapper.TwitterDatas;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -104,6 +105,35 @@ namespace NemoKachi
                 }
                 else
                     tweetInput.ReplyTweet = null;
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+            if (message != null)
+                await new Windows.UI.Popups.MessageDialog(message).ShowAsync();
+        }
+
+        private async void UsersShowTemporary(object sender, RoutedEventArgs e)
+        {
+            String message = null;
+            try
+            {
+                AccountTokenCollector collector = Application.Current.Resources["AccountCollector"] as AccountTokenCollector;
+                TwitterClient MainClient = Application.Current.Resources["MainClient"] as TwitterClient;
+                String inputText = usernameBox.Text;
+                if (inputText != "")
+                {
+                    Windows.UI.Popups.MessageDialog dialog = new Windows.UI.Popups.MessageDialog(String.Format("Do you want to see the information about the user named \"{0}\"?", inputText));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Show", null, "Yes"));
+                    dialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel", null, "No"));
+                    dialog.CancelCommandIndex = 1;
+                    String resultId = (String)(await dialog.ShowAsync()).Id;
+                    if (resultId == "Yes")
+                    {
+                        TwitterUser user = await MainClient.UsersShowAsync(collector.TokenCollection[0], new UsersShowParameter() { screen_name = inputText }, new GetStatusParameter());
+                    }
+                }
             }
             catch (Exception ex)
             {
