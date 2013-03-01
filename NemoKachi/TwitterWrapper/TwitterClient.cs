@@ -804,14 +804,19 @@ namespace NemoKachi.TwitterWrapper
                             await ConnectSocket(httpRequestMessage, new TimeSpan(0, 0, 5), cancellationToken, progress);
                         }
                     }
-                    catch (System.IO.IOException)
+                    catch (System.IO.IOException)//stream.ReadAsync failed in action
                     {
-                        System.Diagnostics.Debug.WriteLine("Stream disconnected");
+                        System.Diagnostics.Debug.WriteLine("Stream disconnected: served data stream is suddenly cut");
                     }
                     catch (HttpRequestException)//이 때는 GET 자체가 실패한 것
                     {
                         ConnectionFailed = true;
                         System.Diagnostics.Debug.WriteLine("Stream connection failed");
+                    }
+                    catch (TaskCanceledException)//stream.ReadAsync could not be started
+                    {
+                        ConnectionFailed = true;
+                        System.Diagnostics.Debug.WriteLine("Stream disconnected: cannot read the stream further."); 
                     }
                     //TimeoutException이 나면, 다시 연결 시도하려고 하지 말고 나중에 다시 연결 시도하도록 설득하기. Boolean false로 return값 보내기 (IAsyncOperation으로 수정)
 
