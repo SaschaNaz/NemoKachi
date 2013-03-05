@@ -296,7 +296,7 @@ namespace NemoKachi
                 String resultId = (String)(await dialog.ShowAsync()).Id;
                 if (resultId == "Yes")
                 {
-                    streamAction = MainClient.OAuthStreamConnectAsync(collector.TokenCollection[0], System.Net.Http.HttpMethod.Get, "https://userstream.twitter.com/2/user.json", new TwitterParameter());
+                    streamAction = MainClient.OAuthStreamConnectAsync(collector.TokenCollection[0], System.Net.Http.HttpMethod.Get, "https://userstream.twitter.com/1.1/user.json", new TwitterParameter());
                     streamAction.Progress += (_, p) =>
                         {
                             System.Diagnostics.Debug.WriteLine((p as Windows.Data.Json.IJsonValue).Stringify());
